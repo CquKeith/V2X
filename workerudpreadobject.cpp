@@ -37,7 +37,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
     char *recvBuf = new char[MAX_ONE_FRAME_SIZE];
 //    char *m_buf;
 
-    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
+//    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
 
     //    qDebug()<<tr("in %1() , thread id is:%2").arg(__FUNCTION__).arg((int)QThread::currentThreadId());
     //此处需要注意，udpReceiver若是在构造函数中实例化，则其是在老线程中的，而当前函数是在新线程中运行的
@@ -127,6 +127,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
         }
 
     }
+
     delete recvBuf;
 }
 

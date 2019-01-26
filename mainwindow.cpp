@@ -112,13 +112,13 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
     {
 
         //            ui->tabWidget->setCurrentIndex(0);
-        static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
+//        static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
         QString str = QString::fromUtf8(buf,len);
         str.fromLatin1(buf,len);
-        double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
+//        double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
         //            ui->textBrowser_recvText->append(str);
         //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
-//        chartPicSize->addData(++currentIndex,loss);
+        //        chartPicSize->addData(++currentIndex,loss);
         workerUdpReceiveObj->clearFrameRcvCount();
         videowriter.release();
         label_video->setPixmap(QPixmap(defaultCarPicPath));
@@ -150,7 +150,7 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
 
         // 加上{} 互斥的访问buf那段空间 类似于消费者生产者问题中的 “消费者”
         {
-//            QMutexLocker locker(&mutex_mBuffer);
+            //            QMutexLocker locker(&mutex_mBuffer);
             pixmap.loadFromData((uchar*)buf, len, "JPG");
             //                QPixmap resultImg = pixmap.scaled(ui->label_video->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
             //                ui->label_video->setPixmap(resultImg);
@@ -170,15 +170,49 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
  * @param imgdata 图片内容
  * @param num 第几张图片
  */
-void MainWindow::slotTcpRecv(QString imgdata, uint num)
+void MainWindow::slotTcpRecv(int msgtype, char *buf, int len)
 {
-    qint64 delay;
+    //消息处理 放置界面假死
+    //    QCoreApplication::processEvents(QEventLoop::AllEvents,100);
 
-    label_video->setPixmap(hexToPixmap(imgdata,delay));
+    switch (msgtype)
+    {
+        case (int)MsgType::TextType:
+        {
 
-    if(delay > 99999) return;
+            //            ui->tabWidget->setCurrentIndex(0);
+//            static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
+            QString str = QString::fromUtf8(buf,len);
+            str.fromLatin1(buf,len);
+//            double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
+            //            ui->textBrowser_recvText->append(str);
+            //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
+            //        chartPicSize->addData(++currentIndex,loss);
+            workerUdpReceiveObj->clearFrameRcvCount();
+            videowriter.release();
+            label_video->setPixmap(QPixmap(defaultCarPicPath));
 
-    chartPic->addData(num,delay);
+            break;
+        }
+
+        case (int)MsgType::VideoType:
+        {
+            QPixmap pixmap;
+
+            pixmap.loadFromData((uchar*)buf, len, "JPG");
+
+            label_video->setPixmap(pixmap);
+
+            break;
+        }
+    }
+    //    qint64 delay;
+
+    //    label_video->setPixmap(hexToPixmap(imgdata,delay));
+
+    //    if(delay > 99999) return;
+
+    //    chartPic->addData(num,delay);
 }
 /**
  * @brief MainWindow::slotPlotSinglePicDelay
@@ -200,7 +234,9 @@ void MainWindow::slotPlotSinglePicDelayAndFrameSize(uint num, qint64 delaytime,d
  */
 void MainWindow::slotPlotSingleFrameDelay(uint num, qint64 delaytime)
 {
-//    chartFrame->addData(num,delaytime);
+    //    chartFrame->addData(num,delaytime);
+    Q_UNUSED(num)
+    Q_UNUSED(delaytime)
 }
 /**
  * @brief MainWindow::slotGetVideo
@@ -216,13 +252,13 @@ void MainWindow::slotGetVideo()
         videowriter << mat;
     }
 
-//    imwrite("temp.jpg",mat);
+    //    imwrite("temp.jpg",mat);
 
 
     QPixmap pixmap = QPixmap::fromImage(MatToQImage(mat));
     pixmap = pixmap.scaled(label_videoMy->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
     label_videoMy->setPixmap(pixmap);
-        pixmap.save("temp.jpg","JPG");
+    pixmap.save("temp.jpg","JPG");
     //压缩图片质量
 
 
@@ -251,14 +287,14 @@ void MainWindow::slotStartSightShare()
         return;
 
     }
-//    else if(!capture.open(!VIDEOSOURCE)){
-//        qDebug()<<"打开摄像头失败!";
-//        ToastString("打开摄像头失败!");
-//        ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
+    //    else if(!capture.open(!VIDEOSOURCE)){
+    //        qDebug()<<"打开摄像头失败!";
+    //        ToastString("打开摄像头失败!");
+    //        ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
 
-//        return;
+    //        return;
 
-//    }
+    //    }
     timer_get_video = new QTimer(this);
     int videoFrameRate = ui->lineEdit_videoFPS->text().toInt();
     timer_get_video->start(1000/videoFrameRate);//1s采集10张图片
@@ -312,6 +348,7 @@ void MainWindow::slotStopSightShare()
         if(ui->checkBox_Use4G->isChecked()){
             ToastString(tr("发送完毕，共发送 %1 张图片").arg(workerTcpObj->getPicnum()),Toast::TimeLenth::LONG);
             qDebug()<<tr("发送完毕，共发送 %1 张图片").arg(workerTcpObj->getPicnum());
+            workerTcpObj->clearPicNum();
         }else{
             workerUdpSendObj->udpSendText(QString::number(workerUdpSendObj->getFrameNum()));
 
@@ -436,16 +473,16 @@ void MainWindow::InitRealTimeForm()
 
     labelVideoFrom = new QLabel(label_video);
     labelVideoFrom->move(20,20);
-     labelVideoFrom->setStyleSheet("color: rgb(255, 0, 0);background:transparent;font:12pt bold \"Times New Roman\";");
+    labelVideoFrom->setStyleSheet("color: rgb(255, 0, 0);background:transparent;font:12pt bold \"Times New Roman\";");
 
 
     connect(realtimeSetting,&QNavigationWidget::currentItemChanged,[=](const int &index){
         int lenth = realtimeSetting->getItemNum();
         if(index == lenth-1){
             labelVideoFrom->clear();
-//            emit signal_SetCanRecevInfo(false);
+            //            emit signal_SetCanRecevInfo(false);
         }else{
-//            emit signal_SetCanRecevInfo(true);
+            //            emit signal_SetCanRecevInfo(true);
             labelVideoFrom->setText("视频来源："+realtimeSetting->getCurrentItemText());
         }
         labelVideoFrom->adjustSize();
@@ -548,14 +585,14 @@ void MainWindow::InitAnalyseForm()
     chartPicSize->setYaxisLabel("大小(KB)");
 
     //产生随机的测试数据
-//    qsrand(QDateTime::currentDateTime().toMSecsSinceEpoch());
-//    int x = -300;
-//    while(x<300){
+    //    qsrand(QDateTime::currentDateTime().toMSecsSinceEpoch());
+    //    int x = -300;
+    //    while(x<300){
 
-//        chartPic->addData(x,qrand()%300-100);
-//        chartFrame->addData(x,qrand()%300-100);
-//        x += qMin(qrand()%30+5,300);
-//    }
+    //        chartPic->addData(x,qrand()%300-100);
+    //        chartFrame->addData(x,qrand()%300-100);
+    //        x += qMin(qrand()%30+5,300);
+    //    }
 
 
 }
@@ -641,6 +678,8 @@ void MainWindow::InitWorkerThread()
         ToastString(msg,Toast::MEDIUM);
     });
     connect(this,&MainWindow::signal_SetCanRecevInfo,workerUdpReceiveObj,&WorkerUdpReadObject::setCanRecevInfo);
+    connect(workerTcpObj,&WorkerTcpObject::signalSinglePicDelayAndFrameSize,this,&MainWindow::slotPlotSinglePicDelayAndFrameSize);
+
 
 }
 
@@ -680,6 +719,11 @@ void MainWindow::on_pb_getLocalIP_clicked()
  */
 void MainWindow::on_pb_bindLocal_clicked()
 {
+    if(ui->checkBox_Use4G->isChecked()){
+        ToastString("使用TCP无需设置此选项");
+        return;
+    }
+
     QString ip = ui->comboBoxLocalIP->currentText();
     if(ip.isEmpty()){
         ToastString("请选择ip地址！");

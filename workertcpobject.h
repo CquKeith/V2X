@@ -12,15 +12,17 @@
 #include <QByteArray>
 #include <QString>
 #include <QDebug>
+#include <QFile>
 
 #include "imagetool.h"
+#include "msghead.h"
 
 class WorkerTcpObject : public QObject
 {
     Q_OBJECT
 public:
     explicit WorkerTcpObject(QObject *parent = nullptr);
-
+    ~WorkerTcpObject();
 
 
     __inline quint64 getPicnum() const{return picnum;}
@@ -37,7 +39,10 @@ public:
 signals:
     void signalWorkerTcpMsgDialog(int,QString);
 
-    void signalTcpRecvOK(QString imgdata,uint num);
+    void signalTcpRecvOK(int msgtype, char *buf, int len);
+
+    //frameSize : KB
+    void signalSinglePicDelayAndFrameSize(uint num,qint64 delaytime,double frameSize);
 
     void signalStartTcp();
 
@@ -46,6 +51,7 @@ public slots:
     void tcpSendImage(QString filepath, int msgtype, QString imageFormat);
 
     void slotTcpReadInfo();
+    void slotTcpRecvVideo();
     void slotConnectToServer(const QString & ip, const quint16 &port, const QString &id);
 
     void slotStartTcp();
@@ -54,6 +60,8 @@ public slots:
 private:
     QThread *workthread;
     QTcpSocket *tcpSocket;
+
+    char *recvBuf;
 
     //这里的目的地址和端口号都是在老线程中的
     //因此Getter和Setter都不是槽函数，而是可以通过对象访问的public函数
@@ -66,6 +74,8 @@ private:
     quint64 picnum;
 
     int waitForReadyTime;
+
+    quint32 hasRecvedSize;
 };
 
 #endif // WORKERTCPSENDOBJECT_H

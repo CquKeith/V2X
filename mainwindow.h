@@ -77,7 +77,7 @@ private slots:
     void menuButtonCilck(); //各个一级菜单的点击信号
     void backToMenu();  //返回主菜单
     void slotRecv(int msgtype, char *buf, int len); //收到消息 在GUI线程显示
-    void slotTcpRecv(QString imgdata, uint num);
+    void slotTcpRecv(int msgtype, char *buf, int len);
     void slotPlotSinglePicDelayAndFrameSize(uint num, qint64 delaytime, double frameSize);//单个图片的传输时延
     void slotPlotSingleFrameDelay(uint num, qint64 delaytime);//MAC帧的传输时延
     void slotGetVideo();                            //捕获摄像头的图像

@@ -576,7 +576,7 @@
                      <string>端口号</string>
                     </property>
                     <property name="clearButtonEnabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                    <widget class="QComboBox" name="comboBoxLocalIP">
@@ -762,7 +762,7 @@
                      <set>Qt::ImhDigitsOnly|Qt::ImhPreferNumbers</set>
                     </property>
                     <property name="text">
-                     <string>4040</string>
+                     <string>12345</string>
                     </property>
                     <property name="maxLength">
                      <number>5</number>
@@ -774,7 +774,7 @@
                      <string>端口号</string>
                     </property>
                     <property name="clearButtonEnabled">
-                     <bool>true</bool>
+                     <bool>false</bool>
                     </property>
                    </widget>
                    <widget class="QComboBox" name="comboBoxOtherIP">
@@ -889,13 +889,16 @@
                      <bool>true</bool>
                     </property>
                     <property name="checked">
-                     <bool>false</bool>
+                     <bool>true</bool>
                     </property>
                     <property name="tristate">
                      <bool>false</bool>
                     </property>
                    </widget>
                    <widget class="QLineEdit" name="lineEdit_id">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="geometry">
                      <rect>
                       <x>90</x>
@@ -939,6 +942,9 @@
                    </property>
                   </widget>
                   <widget class="QLineEdit" name="lineEdit_waitReadyreadtime">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="geometry">
                     <rect>
                      <x>100</x>
