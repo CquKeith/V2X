@@ -1,0 +1,1030 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>800</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>V2X 嵌入式屏幕版</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">font: 12pt &quot;微软雅黑&quot;;</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>12</pointsize>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QStackedWidget" name="stackedWidgetMain">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="page_index">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QToolButton" name="tb_carInfo">
+          <property name="text">
+           <string>车况</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG100.png</normaloff>:/qss/img/PNG100.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QToolButton" name="tb_video">
+          <property name="text">
+           <string>实时视频</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG105.png</normaloff>:/qss/img/PNG105.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QToolButton" name="tb_setting">
+          <property name="text">
+           <string>设置</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG112.png</normaloff>:/qss/img/PNG112.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QToolButton" name="tb_analyse">
+          <property name="text">
+           <string>分析</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG106.png</normaloff>:/qss/img/PNG106.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QToolButton" name="tb_shareSight">
+          <property name="text">
+           <string>视野共享</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/SightShare.png</normaloff>:/qss/img/SightShare.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QToolButton" name="tb_changeSkin">
+          <property name="text">
+           <string>换肤</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG111.png</normaloff>:/qss/img/PNG111.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QToolButton" name="tb_roadInfo">
+          <property name="text">
+           <string>路况</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG103.png</normaloff>:/qss/img/PNG103.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QToolButton" name="tb_exit">
+          <property name="text">
+           <string>退出</string>
+          </property>
+          <property name="icon">
+           <iconset resource="skin.qrc">
+            <normaloff>:/qss/img/PNG102.png</normaloff>:/qss/img/PNG102.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="toolButtonStyle">
+           <enum>Qt::ToolButtonTextUnderIcon</enum>
+          </property>
+          <property name="arrowType">
+           <enum>Qt::NoArrow</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_content">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,7">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="frameContentTitle">
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(0, 134, 241);</string>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QToolButton" name="tb_back">
+             <property name="text">
+              <string>返回</string>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonTextBesideIcon</enum>
+             </property>
+             <property name="arrowType">
+              <enum>Qt::LeftArrow</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>702</width>
+               <height>17</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_currentTime">
+             <property name="styleSheet">
+              <string notr="true">color: rgb(255, 255, 255);</string>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+          <zorder>tb_back</zorder>
+          <zorder>horizontalSpacer</zorder>
+          <zorder>label_currentTime</zorder>
+         </widget>
+        </item>
+        <item>
+         <widget class="QStackedWidget" name="stackedWidget_Content">
+          <property name="currentIndex">
+           <number>4</number>
+          </property>
+          <widget class="QWidget" name="page_carInfo">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="text">
+               <string>车况信息</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_video">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="myQSpliter" name="widgetRealTimeVideo" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_sightShare">
+           <layout class="QGridLayout" name="gridLayout_4">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="myQSpliter" name="widgetSightShare" native="true"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_analyse">
+           <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,7">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QNavigationWidget" name="widget_analyseMenu" native="true">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(255, 170, 255);</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QStackedWidget" name="stackedWidgetAnalyse">
+              <widget class="QWidget" name="pageAnalyseEachPicture">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_6">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="pageAnalyseEachFrame">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_5">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_setting">
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,7">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QNavigationWidget" name="widgetSettingMenu" native="true">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(170, 85, 127);</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QStackedWidget" name="stackedWidget_settingContent">
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <widget class="QWidget" name="pageSettingProfile">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(0, 0, 0);</string>
+               </property>
+              </widget>
+              <widget class="QWidget" name="pageSettingIPAddress">
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <widget class="QGroupBox" name="groupBox">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                    <pointsize>12</pointsize>
+                    <weight>50</weight>
+                    <italic>false</italic>
+                    <bold>false</bold>
+                   </font>
+                  </property>
+                  <property name="title">
+                   <string>本机IP地址</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checkable">
+                   <bool>false</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                  <widget class="QFrame" name="frame">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>50</y>
+                     <width>331</width>
+                     <height>151</height>
+                    </rect>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <widget class="QPushButton" name="pb_bindLocal">
+                    <property name="geometry">
+                     <rect>
+                      <x>180</x>
+                      <y>100</y>
+                      <width>71</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="text">
+                     <string>绑定</string>
+                    </property>
+                   </widget>
+                   <widget class="QLineEdit" name="lineEdit_localPort">
+                    <property name="geometry">
+                     <rect>
+                      <x>90</x>
+                      <y>50</y>
+                      <width>161</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="layoutDirection">
+                     <enum>Qt::LeftToRight</enum>
+                    </property>
+                    <property name="inputMethodHints">
+                     <set>Qt::ImhDigitsOnly|Qt::ImhPreferNumbers</set>
+                    </property>
+                    <property name="text">
+                     <string>4040</string>
+                    </property>
+                    <property name="maxLength">
+                     <number>5</number>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="placeholderText">
+                     <string>端口号</string>
+                    </property>
+                    <property name="clearButtonEnabled">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                   <widget class="QComboBox" name="comboBoxLocalIP">
+                    <property name="geometry">
+                     <rect>
+                      <x>90</x>
+                      <y>10</y>
+                      <width>161</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                   </widget>
+                   <widget class="QPushButton" name="pb_getLocalIP">
+                    <property name="geometry">
+                     <rect>
+                      <x>90</x>
+                      <y>100</y>
+                      <width>71</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="text">
+                     <string>获取IP</string>
+                    </property>
+                   </widget>
+                   <widget class="QLabel" name="label">
+                    <property name="geometry">
+                     <rect>
+                      <x>11</x>
+                      <y>14</y>
+                      <width>61</width>
+                      <height>30</height>
+                     </rect>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="text">
+                     <string>IP</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                   <widget class="QLabel" name="label_2">
+                    <property name="geometry">
+                     <rect>
+                      <x>20</x>
+                      <y>53</y>
+                      <width>51</width>
+                      <height>30</height>
+                     </rect>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="text">
+                     <string>Port</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </widget>
+                  <widget class="QLineEdit" name="lineEdit_videoFPS">
+                   <property name="geometry">
+                    <rect>
+                     <x>110</x>
+                     <y>230</y>
+                     <width>171</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>10</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_9">
+                   <property name="geometry">
+                    <rect>
+                     <x>30</x>
+                     <y>230</y>
+                     <width>71</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>视频帧率</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="checkBoxStroeSightShare">
+                   <property name="geometry">
+                    <rect>
+                     <x>30</x>
+                     <y>280</y>
+                     <width>161</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">color: rgb(255, 255, 255);</string>
+                   </property>
+                   <property name="text">
+                    <string>保存分享的视频</string>
+                   </property>
+                   <property name="checked">
+                    <bool>false</bool>
+                   </property>
+                   <property name="tristate">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="Line" name="line">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QGroupBox" name="groupBox_2">
+                  <property name="font">
+                   <font>
+                    <family>微软雅黑</family>
+                    <pointsize>12</pointsize>
+                    <weight>50</weight>
+                    <italic>false</italic>
+                    <bold>false</bold>
+                   </font>
+                  </property>
+                  <property name="title">
+                   <string>对方IP地址</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                  <widget class="QFrame" name="frame_2">
+                   <property name="geometry">
+                    <rect>
+                     <x>10</x>
+                     <y>50</y>
+                     <width>311</width>
+                     <height>181</height>
+                    </rect>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <widget class="QPushButton" name="pb_setOtherSocket">
+                    <property name="geometry">
+                     <rect>
+                      <x>180</x>
+                      <y>140</y>
+                      <width>71</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="text">
+                     <string>设置</string>
+                    </property>
+                   </widget>
+                   <widget class="QLineEdit" name="lineEdit_otherPort">
+                    <property name="geometry">
+                     <rect>
+                      <x>90</x>
+                      <y>50</y>
+                      <width>170</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="layoutDirection">
+                     <enum>Qt::LeftToRight</enum>
+                    </property>
+                    <property name="inputMethodHints">
+                     <set>Qt::ImhDigitsOnly|Qt::ImhPreferNumbers</set>
+                    </property>
+                    <property name="text">
+                     <string>22345</string>
+                    </property>
+                    <property name="maxLength">
+                     <number>5</number>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="placeholderText">
+                     <string>端口号</string>
+                    </property>
+                    <property name="clearButtonEnabled">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                   <widget class="QComboBox" name="comboBoxOtherIP">
+                    <property name="geometry">
+                     <rect>
+                      <x>90</x>
+                      <y>10</y>
+                      <width>170</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="font">
+                     <font>
+                      <family>微软雅黑</family>
+                      <pointsize>12</pointsize>
+                      <weight>50</weight>
+                      <italic>false</italic>
+                      <bold>false</bold>
+                     </font>
+                    </property>
+                    <property name="editable">
+                     <bool>true</bool>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>192.168.1.80</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>192.168.123.137</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>127.0.0.1</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>120.78.167.211</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>115.29.106.37</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>192.168.31.77</string>
+                     </property>
+                    </item>
+                   </widget>
+                   <widget class="QLabel" name="label_3">
+                    <property name="geometry">
+                     <rect>
+                      <x>30</x>
+                      <y>52</y>
+                      <width>51</width>
+                      <height>30</height>
+                     </rect>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="text">
+                     <string>Port</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                   <widget class="QLabel" name="label_4">
+                    <property name="geometry">
+                     <rect>
+                      <x>20</x>
+                      <y>11</y>
+                      <width>61</width>
+                      <height>30</height>
+                     </rect>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="text">
+                     <string>IP</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                   <widget class="QCheckBox" name="checkBox_Use4G">
+                    <property name="geometry">
+                     <rect>
+                      <x>50</x>
+                      <y>140</y>
+                      <width>91</width>
+                      <height>30</height>
+                     </rect>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="text">
+                     <string>使用4G</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                    <property name="tristate">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                   <widget class="QLineEdit" name="lineEdit_id">
+                    <property name="geometry">
+                     <rect>
+                      <x>90</x>
+                      <y>90</y>
+                      <width>171</width>
+                      <height>31</height>
+                     </rect>
+                    </property>
+                    <property name="text">
+                     <string>001</string>
+                    </property>
+                   </widget>
+                   <widget class="QLabel" name="label_6">
+                    <property name="geometry">
+                     <rect>
+                      <x>30</x>
+                      <y>100</y>
+                      <width>51</width>
+                      <height>16</height>
+                     </rect>
+                    </property>
+                    <property name="styleSheet">
+                     <string notr="true">color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="text">
+                     <string>ID:</string>
+                    </property>
+                   </widget>
+                  </widget>
+                  <widget class="QLabel" name="label_8">
+                   <property name="geometry">
+                    <rect>
+                     <x>20</x>
+                     <y>270</y>
+                     <width>71</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>读取时间</string>
+                   </property>
+                  </widget>
+                  <widget class="QLineEdit" name="lineEdit_waitReadyreadtime">
+                   <property name="geometry">
+                    <rect>
+                     <x>100</x>
+                     <y>270</y>
+                     <width>171</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>20</string>
+                   </property>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="pageSettingMsgPrivacy">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(170, 85, 255);</string>
+               </property>
+              </widget>
+              <widget class="QWidget" name="pageSettingMapDownload">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+              </widget>
+              <widget class="QWidget" name="pageSettingAbout">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(0, 170, 127);</string>
+               </property>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_roadInfo">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>路况信息</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QNavigationWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">myNavigationWidget/qnavigationwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>myQSpliter</class>
+   <extends>QWidget</extends>
+   <header location="global">mySpliterWidget/myqspliter.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="skin.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>tb_exit</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>667</x>
+     <y>388</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>276</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

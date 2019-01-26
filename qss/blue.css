@@ -1,0 +1,13 @@
+QWidget#centralWidget{
+    background-image: url(:qss/img/main1.jpg);
+    font: 12pt "微软雅黑";
+}
+
+QToolButton{
+    color:#E7ECF0;
+    background-color:rgba(0,0,0,0);
+    font: 12pt "微软雅黑";
+    color:#E7ECF0;
+    border-style:none;
+}
+

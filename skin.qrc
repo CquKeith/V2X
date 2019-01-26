@@ -1,0 +1,44 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qss/blue.css</file>
+        <file>qss/img/add_bottom.png</file>
+        <file>qss/img/add_left.png</file>
+        <file>qss/img/add_right.png</file>
+        <file>qss/img/add_top.png</file>
+        <file>qss/img/branch_close.png</file>
+        <file>qss/img/branch_open.png</file>
+        <file>qss/img/calendar_nextmonth.png</file>
+        <file>qss/img/calendar_prevmonth.png</file>
+        <file>qss/img/checkbox_checked.png</file>
+        <file>qss/img/checkbox_checked_disable.png</file>
+        <file>qss/img/checkbox_parcial.png</file>
+        <file>qss/img/checkbox_parcial_disable.png</file>
+        <file>qss/img/checkbox_unchecked.png</file>
+        <file>qss/img/checkbox_unchecked_disable.png</file>
+        <file>qss/img/main1.jpg</file>
+        <file>qss/img/main2.jpg</file>
+        <file>qss/img/main3.jpg</file>
+        <file>qss/img/main4.jpg</file>
+        <file>qss/img/main5.jpg</file>
+        <file>qss/img/PNG99.png</file>
+        <file>qss/img/PNG100.png</file>
+        <file>qss/img/PNG101.png</file>
+        <file>qss/img/PNG102.png</file>
+        <file>qss/img/PNG103.png</file>
+        <file>qss/img/PNG104.png</file>
+        <file>qss/img/PNG105.png</file>
+        <file>qss/img/PNG106.png</file>
+        <file>qss/img/PNG107.png</file>
+        <file>qss/img/PNG108.png</file>
+        <file>qss/img/PNG109.png</file>
+        <file>qss/img/PNG110.png</file>
+        <file>qss/img/PNG111.png</file>
+        <file>qss/img/PNG112.png</file>
+        <file>qss/img/PNG114.png</file>
+        <file>qss/img/radiobutton_checked.png</file>
+        <file>qss/img/radiobutton_checked_disable.png</file>
+        <file>qss/img/radiobutton_unchecked.png</file>
+        <file>qss/img/radiobutton_unchecked_disable.png</file>
+        <file>qss/img/SightShare.png</file>
+    </qresource>
+</RCC>

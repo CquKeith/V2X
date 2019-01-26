@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/navigate-left.ico</file>
+        <file>img/navigate-right.ico</file>
+    </qresource>
+</RCC>
