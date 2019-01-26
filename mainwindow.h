@@ -39,11 +39,11 @@
 
 #define SIGHT_SHARE_TIME 9999
 
-#define VIDEOSOURCE "./videoSource/2018-11-24 10.18.51.avi"
+//#define VIDEOSOURCE "./videoSource/2018-11-24 10.18.51.avi"
 
 //#define VIDEOSOURCE "./videoSource/2018-11-24 10.18.51.avi"
 //#define VIDEOSOURCE "./videoSource/2018-11-24 10.47.43.avi"
-//#define VIDEOSOURCE 0
+#define VIDEOSOURCE 0
 
 namespace Ui {
 class MainWindow;

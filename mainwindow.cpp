@@ -29,10 +29,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     InitWorkerThread();
 
-
+    on_pb_getLocalIP_clicked();
 
     //    timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch(); //毫秒级
     //    qDebug()<<timestamp;
+
 
 
     //    QTimer::singleShot(10,[=]{ui->widgetRealTimeVideo->refreshForm();ui->widgetSightShare->refreshForm();});
@@ -149,7 +150,7 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
 
         // 加上{} 互斥的访问buf那段空间 类似于消费者生产者问题中的 “消费者”
         {
-            QMutexLocker locker(&mutex_mBuffer);
+//            QMutexLocker locker(&mutex_mBuffer);
             pixmap.loadFromData((uchar*)buf, len, "JPG");
             //                QPixmap resultImg = pixmap.scaled(ui->label_video->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
             //                ui->label_video->setPixmap(resultImg);

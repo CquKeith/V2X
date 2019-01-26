@@ -2,14 +2,30 @@
 #define MSGHEAD_H
 #include <QObject>
 #include <QMutex>
+#include <QMap>
 
 // 一张图片 最大1M
 #define MAX_IMAGE_SIZE 1024*1024*1
 //一帧数据的最大字节数
 #define MAX_ONE_FRAME_SIZE 1300
 
+#define MEM_CACHE_MAX_SIZE 100
+
 static QMutex mutex_hostIPandPort;
 static QMutex mutex_mBuffer;
+
+/*内存缓冲的结构体*/
+typedef struct memCacheStructure
+{
+    quint32 memSize;    //从起始地址开始存了多少的数据
+    quint16 picNum;     //这是存的哪张图片的内容
+    bool isVisited;     //如果 为true，说明此段内存空间可以被使用
+    char* memStart;   //内存的起始地址
+
+}s_memCache;
+
+/*Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构起*/
+static QMap<quint16,s_memCache> memCacheMap;
 
 enum MsgType{
     TextType=1,
@@ -31,7 +47,7 @@ typedef struct  {
     unsigned int uPicnum;               //当前发送的是第几张图片
     long long  uSendDatatime;          //数据帧发送时间戳
     long long  uRecDatatime;           //数据帧接收时间戳
-    double picSize;                    //如果是发送的视频或者图片，这里标记图片文件的大小
+//    double picSize;                    //如果是发送的视频或者图片，这里标记图片文件的大小
 }PackageHead;
 
 enum WrokerObjectrMsgTypeToDlg{
@@ -39,6 +55,7 @@ enum WrokerObjectrMsgTypeToDlg{
     Warning,
     Critical
 };
+
 
 
 

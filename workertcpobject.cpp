@@ -28,7 +28,7 @@ void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port
  */
 void WorkerTcpObject::slotStartTcp()
 {
-    qDebug()<<"TCP初始化";
+    qDebug()<<"TCP init";
     tcpSocket = new QTcpSocket(this);
     waitForReadyTime = 0;
     connect(tcpSocket,&QTcpSocket::connected,[=]{

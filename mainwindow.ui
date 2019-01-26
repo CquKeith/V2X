@@ -762,7 +762,7 @@
                      <set>Qt::ImhDigitsOnly|Qt::ImhPreferNumbers</set>
                     </property>
                     <property name="text">
-                     <string>22345</string>
+                     <string>4040</string>
                     </property>
                     <property name="maxLength">
                      <number>5</number>
@@ -797,6 +797,9 @@
                     </property>
                     <property name="editable">
                      <bool>true</bool>
+                    </property>
+                    <property name="currentIndex">
+                     <number>2</number>
                     </property>
                     <item>
                      <property name="text">
@@ -882,8 +885,11 @@
                     <property name="text">
                      <string>使用4G</string>
                     </property>
-                    <property name="checked">
+                    <property name="checkable">
                      <bool>true</bool>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
                     </property>
                     <property name="tristate">
                      <bool>false</bool>

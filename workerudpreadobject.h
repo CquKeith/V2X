@@ -51,7 +51,7 @@ private slots:
 private:
     QThread *workthread;
     QUdpSocket *udpReceiver;
-    char *m_buf;
+//    char *m_buf;
 
     //这里的目的地址和端口号都是在老线程中的
     //因此Getter和Setter都不是槽函数，而是可以通过对象访问的public函数
