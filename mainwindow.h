@@ -78,7 +78,7 @@ private slots:
     void backToMenu();  //返回主菜单
     void slotRecv(int msgtype, char *buf, int len); //收到消息 在GUI线程显示
     void slotTcpRecv(QString imgdata, uint num);
-    void slotPlotSinglePicDelay(uint num,qint64 delaytime);//单个图片的传输时延
+    void slotPlotSinglePicDelayAndFrameSize(uint num, qint64 delaytime, double frameSize);//单个图片的传输时延
     void slotPlotSingleFrameDelay(uint num, qint64 delaytime);//MAC帧的传输时延
     void slotGetVideo();                            //捕获摄像头的图像
     void slotStartSightShare();
@@ -138,7 +138,7 @@ private:
     QString defaultCarPicPath;
 
     // 图像分析
-    QCustomChart *chartPic,*chartFrame;
+    QCustomChart *chartPic,*chartPicSize;
 //    quint64 pic_num_hasSended;
 
     //系统时间显示

@@ -141,7 +141,7 @@ void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString ima
         mes.uRecDatatime = 0;
 
         //放入图片的格式
-        memcpy(mes.imageFormat,imageFormat.toStdString().data(),imageFormat.length());
+//        memcpy(mes.imageFormat,imageFormat.toStdString().data(),imageFormat.length());
 
         imgfile.read(m_sendBuf+sizeof(PackageHead), packageContentSize);
 

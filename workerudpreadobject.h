@@ -34,7 +34,8 @@ public:
 signals:
     void signalUdpSocketStartListion();
     void sigRecvOk(int msgtype, char *buf, int len);
-    void signalSinglePicDelay(uint num,qint64 delaytime);
+    //frameSize : KB
+    void signalSinglePicDelayAndFrameSize(uint num,qint64 delaytime,double frameSize);
     void signalSingleFrameDelay(uint num,qint64 delaytime);
 //    void sigRecvOk(int msgtype, QString, int len);
     void signalWorkerUdpReaderMsgDialog(int,QString);

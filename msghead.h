@@ -27,10 +27,11 @@ typedef struct  {
     unsigned int uDataFrameTotal;       //一帧数据被分成传输帧的个数
     unsigned int uDataFrameCurr;        //数据帧当前的帧号
     unsigned int uDataInFrameOffset;    //数据帧在整帧的偏移
-    char imageFormat[4]={0};
+//    char imageFormat[4]={0};
     unsigned int uPicnum;               //当前发送的是第几张图片
     long long  uSendDatatime;          //数据帧发送时间戳
     long long  uRecDatatime;           //数据帧接收时间戳
+    double picSize;                    //如果是发送的视频或者图片，这里标记图片文件的大小
 }PackageHead;
 
 enum WrokerObjectrMsgTypeToDlg{

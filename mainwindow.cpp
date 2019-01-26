@@ -117,7 +117,7 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
         double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
         //            ui->textBrowser_recvText->append(str);
         //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
-        chartFrame->addData(++currentIndex,loss);
+//        chartPicSize->addData(++currentIndex,loss);
         workerUdpReceiveObj->clearFrameRcvCount();
         videowriter.release();
         label_video->setPixmap(QPixmap(defaultCarPicPath));
@@ -185,9 +185,12 @@ void MainWindow::slotTcpRecv(QString imgdata, uint num)
  * @param num 该图片是收到的发送出来的第几张的图片
  * @param delaytime 时延，ms为单位
  */
-void MainWindow::slotPlotSinglePicDelay(uint num, qint64 delaytime)
+void MainWindow::slotPlotSinglePicDelayAndFrameSize(uint num, qint64 delaytime,double frameSize)
 {
     chartPic->addData(num,delaytime);
+
+
+    chartPicSize->addData(num,frameSize);
 }
 /**
  * @brief MainWindow::slotPlotSingleFrameDelay
@@ -196,7 +199,7 @@ void MainWindow::slotPlotSinglePicDelay(uint num, qint64 delaytime)
  */
 void MainWindow::slotPlotSingleFrameDelay(uint num, qint64 delaytime)
 {
-    chartFrame->addData(num,delaytime);
+//    chartFrame->addData(num,delaytime);
 }
 /**
  * @brief MainWindow::slotGetVideo
@@ -518,8 +521,8 @@ void MainWindow::InitSightShareForm()
 void MainWindow::InitAnalyseForm()
 {
     QNavigationWidget *analyseWidgetMenu = ui->widget_analyseMenu;
-    analyseWidgetMenu->addItem("单张图片");
-    analyseWidgetMenu->addItem("MAC帧");
+    analyseWidgetMenu->addItem("单张图片delay");
+    analyseWidgetMenu->addItem("单张图片size");
     connect(analyseWidgetMenu,&QNavigationWidget::currentItemChanged,[=](const int &index){
         ui->stackedWidgetAnalyse->setCurrentIndex(index);
     });
@@ -530,18 +533,18 @@ void MainWindow::InitAnalyseForm()
         QMessageBox::information(this,tr("tips"),tr("Excel导出完毕"));
     });
 
-    chartFrame = new QCustomChart(ui->pageAnalyseEachFrame);
-    ui->pageAnalyseEachFrame->layout()->addWidget(chartFrame);
-    connect(chartFrame,&QCustomChart::signalExportExcelDone,[=]{
+    chartPicSize = new QCustomChart(ui->pageAnalyseEachFrame);
+    ui->pageAnalyseEachFrame->layout()->addWidget(chartPicSize);
+    connect(chartPicSize,&QCustomChart::signalExportExcelDone,[=]{
         QMessageBox::information(this,tr("tips"),tr("Excel导出完毕"));
     });
 
     chartPic->setTitle("单张图片分析");
-    chartFrame->setTitle("单帧数据分析");
+    chartPicSize->setTitle("单帧图片大小");
     chartPic->setXaxisLabel("序号");
     chartPic->setYaxisLabel("时延(ms)");
-    chartFrame->setXaxisLabel("序号");
-    chartFrame->setYaxisLabel("丢包率(%)");
+    chartPicSize->setXaxisLabel("序号");
+    chartPicSize->setYaxisLabel("大小(KB)");
 
     //产生随机的测试数据
 //    qsrand(QDateTime::currentDateTime().toMSecsSinceEpoch());
@@ -625,7 +628,7 @@ void MainWindow::InitWorkerThread()
         Q_UNUSED(FrameCurr)
         Q_UNUSED(FrameTotal)
     });
-    connect(workerUdpReceiveObj,&WorkerUdpReadObject::signalSinglePicDelay,this,&MainWindow::slotPlotSinglePicDelay);
+    connect(workerUdpReceiveObj,&WorkerUdpReadObject::signalSinglePicDelayAndFrameSize,this,&MainWindow::slotPlotSinglePicDelayAndFrameSize);
     //    connect(workerUdpReceiveObj,&WorkerUdpReadObject::signalSingleFrameDelay,this,&MainWindow::slotPlotSingleFrameDelay);
 
     workerTcpObj = new WorkerTcpObject;

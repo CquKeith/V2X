@@ -34,3 +34,4 @@
 bin
 Debug
 Release
+*.user

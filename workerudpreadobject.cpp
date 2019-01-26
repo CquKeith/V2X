@@ -71,7 +71,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
                 if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
 //                    qDebug()<<"received an image,then emit signal to GUI Thread";
                     emit sigRecvOk((int)mes->msgType,m_buf, mes->uDataFrameSize);
-                    emit signalSinglePicDelay(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime);
+                    emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
 
                 }
             }
