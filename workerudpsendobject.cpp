@@ -164,6 +164,7 @@ void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString ima
 //        }
     }
     imgfile.close();
+    delete m_sendBuf;
 }
 
 

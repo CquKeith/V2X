@@ -258,12 +258,14 @@ void MainWindow::slotGetVideo()
     QPixmap pixmap = QPixmap::fromImage(MatToQImage(mat));
     pixmap = pixmap.scaled(label_videoMy->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
     label_videoMy->setPixmap(pixmap);
+
     pixmap.save("temp.jpg","JPG");
     //压缩图片质量
 
 
     if(ui->checkBox_Use4G->isChecked()){
         emit signal_tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
+//        qDebug()<<__FUNCTION__;
     }else{
         emit signal_udpSendImage("temp.jpg",MsgType::VideoType,"JPG");
     }
@@ -671,7 +673,7 @@ void MainWindow::InitWorkerThread()
 
     workerTcpObj = new WorkerTcpObject;
     connect(this,&MainWindow::signal_ConnectToServer,workerTcpObj,&WorkerTcpObject::slotConnectToServer);
-    connect(this,&MainWindow::signal_tcpSendImage,workerTcpObj,&WorkerTcpObject::tcpSendImage);
+    connect(this,&MainWindow::signal_tcpSendImage,workerTcpObj,&WorkerTcpObject::tcpSendImage,Qt::DirectConnection);
     connect(workerTcpObj,&WorkerTcpObject::signalTcpRecvOK,this,&MainWindow::slotTcpRecv);
     connect(workerTcpObj,&WorkerTcpObject::signalWorkerTcpMsgDialog,this,[=](int type,QString msg){
         Q_UNUSED(type)

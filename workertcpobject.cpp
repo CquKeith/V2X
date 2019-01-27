@@ -10,15 +10,18 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 
     connect(this,&WorkerTcpObject::signalStartTcp,this,&WorkerTcpObject::slotStartTcp);
 
-    recvBuf = new char[65536];
+//    recvBuf = new char[65536];
 
     emit signalStartTcp();
+
+    qDebug()<<__FUNCTION__<<QThread::currentThreadId();
 
 }
 
 WorkerTcpObject::~WorkerTcpObject()
 {
-    delete recvBuf;
+//    delete recvBuf;
+    delete m_sendBuf;
 }
 
 void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port,const QString & id)
@@ -36,7 +39,8 @@ void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port
 void WorkerTcpObject::slotStartTcp()
 {
     qDebug()<<"TCP init";
-    tcpSocket = new QTcpSocket(this);
+    tcpSocket = new QTcpSocket;
+    qDebug()<<__FUNCTION__<<QThread::currentThreadId();
     waitForReadyTime = 0;
     connect(tcpSocket,&QTcpSocket::connected,[=]{
         qDebug()<<"连接上服务器";
@@ -57,6 +61,175 @@ void WorkerTcpObject::slotStartTcp()
     connect(tcpSocket,&QTcpSocket::readyRead,this,&WorkerTcpObject::slotTcpRecvVideo);
 
     hasRecvedSize = 0;
+
+    m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
+}
+
+void WorkerTcpObject::readTcpInfo()
+{
+    while(tcpSocket->bytesAvailable()){
+//        memset(recvBuf, 0, 65536);
+//        int size = tcpSocket->bytesAvailable();
+//        hasRecvedSize += size;
+//        tcpSocket->read(recvBuf, size);
+        QByteArray datagram;
+        datagram.resize(tcpSocket->bytesAvailable());
+        datagram = tcpSocket->readAll();
+
+        char *recvBuf = datagram.data();
+        PackageHead *mes = (PackageHead *)datagram.data();
+
+        if (mes->msgType == MsgType::ImageType || mes->msgType == MsgType::VideoType) {
+            char * m_buf;
+            quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
+            /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
+            if(memCacheMap.contains(key)){
+                s_memCache mem_cache = memCacheMap[key];
+
+                //此片内存别人已经用完，可以再次使用
+                if(mem_cache.isVisited){
+                    m_buf = mem_cache.memStart;
+                    mem_cache.memSize = 0;
+                }
+                //正在使用，则自己新建一片内存空间，并加入到memCacheMap中
+                else{
+                    //如果这片内存存的是本张图片的剩余部分
+                    if(mem_cache.picNum == mes->uPicnum){
+                        m_buf = mem_cache.memStart;
+                    }
+                    //如果这片内存存的是其他的图片
+                    else{
+                        m_buf = new char[MAX_IMAGE_SIZE];
+                        mem_cache.isVisited = false;
+                        mem_cache.memStart = m_buf;
+                        mem_cache.memSize = 0;
+                        memCacheMap[key] = mem_cache;
+                    }
+                }
+            }
+            //不包含，则是第一次来此key（picNum%MEM_CACHE_MAX_SIZE）
+            else{
+                m_buf = new char[MAX_IMAGE_SIZE];
+                s_memCache mem_cache;
+                mem_cache.isVisited = false;
+                mem_cache.memStart = m_buf;
+                mem_cache.memSize = 0;
+                mem_cache.picNum = mes->uPicnum;
+                memCacheMap.insert(key,mem_cache);
+            }
+            memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
+
+            mes->uRecDatatime= QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
+
+            if (hasRecvedSize >= (mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize)) {
+                emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
+                emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
+                memCacheMap[key].isVisited = true;
+                hasRecvedSize = 0;
+            }
+        }
+    }
+
+}
+/**
+ * @brief WorkerTcpObject::readTcpInfoDealBug
+ * 解决粘包的问题
+ */
+void WorkerTcpObject::readTcpInfoDealBug()
+{
+    //缓冲区没有数据，直接无视
+    if(tcpSocket->bytesAvailable()<=0){
+        return;
+    }
+    //临时获得从缓存区取出来的数据，但是不确定每次取出来的是多少。
+    QByteArray buffer;
+    //如果是信号readyRead触发的，使用readAll时会一次把这一次可用的数据全总读取出来
+    //所以使用while(m_tcpClient->bytesAvailable())意义不大，其实只执行一次。
+    buffer = tcpSocket->readAll();
+
+
+    //上次缓存加上这次数据
+    /**
+        上面有讲到混包的三种情况，数据A、B，他们过来时有可能是A+B、B表示A包+B包中一部分数据，
+        然后是B包剩下的数据，或者是A、A+B表示A包一部分数据，然后是A包剩下的数据与B包组合。
+        这个时候，我们解析时肯定会残留下一部分数据，并且这部分数据对于下一包会有效，所以我们
+        要和下一包组合起来。
+    */
+    m_buffer.append(buffer);
+
+    int totalLen = m_buffer.size();
+    while( totalLen ){
+        //不够包头的数据直接就不处理。
+        if( totalLen < sizeof(PackageHead) )
+        {
+            break;
+        }
+        char *recvBuf = buffer.data();
+        PackageHead *mes = (PackageHead *)recvBuf;
+        //如果不够长度，等够了再解析
+        if(totalLen < mes->uTransFrameSize)break;
+
+        //数据足够多，且满足我们定义的包头的几种类型
+        if (mes->msgType == MsgType::ImageType || mes->msgType == MsgType::VideoType) {
+            char * m_buf;
+            quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
+            /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
+            if(memCacheMap.contains(key)){
+                s_memCache mem_cache = memCacheMap[key];
+
+                //此片内存别人已经用完，可以再次使用
+                if(mem_cache.isVisited){
+                    m_buf = mem_cache.memStart;
+                    mem_cache.memSize = 0;
+                }
+                //正在使用，则自己新建一片内存空间，并加入到memCacheMap中
+                else{
+                    //如果这片内存存的是本张图片的剩余部分
+                    if(mem_cache.picNum == mes->uPicnum){
+                        m_buf = mem_cache.memStart;
+                    }
+                    //如果这片内存存的是其他的图片
+                    else{
+                        m_buf = new char[MAX_IMAGE_SIZE];
+                        mem_cache.isVisited = false;
+                        mem_cache.memStart = m_buf;
+                        mem_cache.memSize = 0;
+                        memCacheMap[key] = mem_cache;
+                    }
+                }
+            }
+            //不包含，则是第一次来此key（picNum%MEM_CACHE_MAX_SIZE）
+            else{
+                m_buf = new char[MAX_IMAGE_SIZE];
+                s_memCache mem_cache;
+                mem_cache.isVisited = false;
+                mem_cache.memStart = m_buf;
+                mem_cache.memSize = 0;
+                mem_cache.picNum = mes->uPicnum;
+                memCacheMap.insert(key,mem_cache);
+            }
+            memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
+
+            mes->uRecDatatime= QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
+
+            if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
+                emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
+                emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
+                memCacheMap[key].isVisited = true;
+//                hasRecvedSize = 0;
+            }
+        }
+
+        //缓存多余的数据
+        buffer = m_buffer.right(totalLen - mes->uTransFrameSize - sizeof(PackageHead));
+
+        //更新长度
+        totalLen = buffer.size();
+
+        //更新多余数据
+        m_buffer = buffer;
+    }
+
 
 }
 
@@ -150,66 +323,9 @@ void WorkerTcpObject::slotTcpReadInfo()
  */
 void WorkerTcpObject::slotTcpRecvVideo()
 {
-//    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
-    while(tcpSocket->bytesAvailable()){
-        memset(recvBuf, 0, 65536);
-        int size = tcpSocket->bytesAvailable();
-        hasRecvedSize += size;
-        tcpSocket->read(recvBuf, size);
-
-        PackageHead *mes = (PackageHead *)recvBuf;
-
-        if (mes->msgType == MsgType::ImageType || mes->msgType == MsgType::VideoType) {
-            char * m_buf;
-            quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
-            /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
-            if(memCacheMap.contains(key)){
-                s_memCache mem_cache = memCacheMap[key];
-
-                //此片内存别人已经用完，可以再次使用
-                if(mem_cache.isVisited){
-                    m_buf = mem_cache.memStart;
-                    mem_cache.memSize = 0;
-                }
-                //正在使用，则自己新建一片内存空间，并加入到memCacheMap中
-                else{
-                    //如果这片内存存的是本张图片的剩余部分
-                    if(mem_cache.picNum == mes->uPicnum){
-                        m_buf = mem_cache.memStart;
-                    }
-                    //如果这片内存存的是其他的图片
-                    else{
-                        m_buf = new char[MAX_IMAGE_SIZE];
-                        mem_cache.isVisited = false;
-                        mem_cache.memStart = m_buf;
-                        mem_cache.memSize = 0;
-                        memCacheMap[key] = mem_cache;
-                    }
-                }
-            }
-            //不包含，则是第一次来此key（picNum%MEM_CACHE_MAX_SIZE）
-            else{
-                m_buf = new char[MAX_IMAGE_SIZE];
-                s_memCache mem_cache;
-                mem_cache.isVisited = false;
-                mem_cache.memStart = m_buf;
-                mem_cache.memSize = 0;
-                mem_cache.picNum = mes->uPicnum;
-                memCacheMap.insert(key,mem_cache);
-            }
-            memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
-
-            mes->uRecDatatime= QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
-
-            if (hasRecvedSize >= (mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize)) {
-                emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
-                emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
-                memCacheMap[key].isVisited = true;
-                hasRecvedSize = 0;
-            }
-        }
-    }
-
+    //    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
+//    readTcpInfo();
+    readTcpInfoDealBug();
 }
 void WorkerTcpObject::tcpSendText(QString messge){
 
@@ -224,7 +340,9 @@ void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageF
         return;
     }
 
-    char *m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
+    qDebug()<<"tcpSendImageFile";
+
+//    char *m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
     int packageContentSize = MAX_ONE_FRAME_SIZE - sizeof(PackageHead);
 
     int size = imgfile.size();
@@ -275,11 +393,14 @@ void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageF
         tcpSocket->write(m_sendBuf, mes.uTransFrameSize+mes.uTransFrameHdrSize);
         //        tcpSocket->write("\n");
         tcpSocket->flush();
+
         tcpSocket->waitForBytesWritten();
 
         count++;
 
     }
     imgfile.close();
+
+//    delete m_sendBuf;
 
 }

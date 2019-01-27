@@ -61,7 +61,7 @@ private:
     QThread *workthread;
     QTcpSocket *tcpSocket;
 
-    char *recvBuf;
+//    char *recvBuf;
 
     //这里的目的地址和端口号都是在老线程中的
     //因此Getter和Setter都不是槽函数，而是可以通过对象访问的public函数
@@ -76,6 +76,16 @@ private:
     int waitForReadyTime;
 
     quint32 hasRecvedSize;
+
+    void readTcpInfo();
+    void readTcpInfoDealBug();
+
+    //缓存上一次或多次的未处理的数据
+    //这个用来处理，重新粘包
+    QByteArray m_buffer;
+
+    char *m_sendBuf;
+//    char * m_buf;
 };
 
 #endif // WORKERTCPSENDOBJECT_H

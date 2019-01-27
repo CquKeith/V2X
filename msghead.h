@@ -9,7 +9,7 @@
 //一帧数据的最大字节数
 #define MAX_ONE_FRAME_SIZE 1300
 
-#define MEM_CACHE_MAX_SIZE 100
+#define MEM_CACHE_MAX_SIZE 1000
 
 static QMutex mutex_hostIPandPort;
 static QMutex mutex_mBuffer;
