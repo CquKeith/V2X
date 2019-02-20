@@ -321,7 +321,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget_Content">
           <property name="currentIndex">
-           <number>4</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page_carInfo">
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -762,7 +762,7 @@
                      <set>Qt::ImhDigitsOnly|Qt::ImhPreferNumbers</set>
                     </property>
                     <property name="text">
-                     <string>12345</string>
+                     <string>4040</string>
                     </property>
                     <property name="maxLength">
                      <number>5</number>

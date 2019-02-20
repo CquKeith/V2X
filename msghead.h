@@ -9,7 +9,8 @@
 //一帧数据的最大字节数
 #define MAX_ONE_FRAME_SIZE 1300
 
-#define MEM_CACHE_MAX_SIZE 1000
+//最多可以同时缓冲多少张图片
+#define MEM_CACHE_MAX_SIZE 100
 
 static QMutex mutex_hostIPandPort;
 static QMutex mutex_mBuffer;
@@ -24,7 +25,7 @@ typedef struct memCacheStructure
 
 }s_memCache;
 
-/*Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构起*/
+/*Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构体*/
 static QMap<quint16,s_memCache> memCacheMap;
 
 enum MsgType{
@@ -54,6 +55,10 @@ enum WrokerObjectrMsgTypeToDlg{
     Information,
     Warning,
     Critical
+};
+enum VideoDeviceType{
+    Camera,
+    File
 };
 
 

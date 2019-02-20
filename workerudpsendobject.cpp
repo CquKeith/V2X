@@ -14,7 +14,7 @@ WorkerUdpSendObject::WorkerUdpSendObject(QObject *parent) : QObject(parent)
     picnum = 0;
     frameNum = 0;
 
-    qDebug()<<sizeof(PackageHead);
+//    qDebug()<<sizeof(PackageHead);
 }
 /*
  * 在主进程中 delete workerobject 的对象时，析构函数是在主线程运行的

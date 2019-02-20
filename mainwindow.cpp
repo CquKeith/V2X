@@ -34,7 +34,10 @@ MainWindow::MainWindow(QWidget *parent) :
     //    timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch(); //毫秒级
     //    qDebug()<<timestamp;
 
+    qDebug()<<__FUNCTION__<<QThread::currentThreadId();
 
+    VIDEOSOURCE = "./videoSource/2018-11-24 10.18.51.avi";
+    deviceType=VideoDeviceType::File;
 
     //    QTimer::singleShot(10,[=]{ui->widgetRealTimeVideo->refreshForm();ui->widgetSightShare->refreshForm();});
 }
@@ -282,12 +285,21 @@ void MainWindow::slotStartSightShare()
         ToastString("已经在共享了，请勿重复点击");
         return;
     }
-    if(!capture.open(VIDEOSOURCE)){
-        qDebug()<<"打开摄像头失败!";
-        ToastString("打开摄像头失败!");
+
+    bool isSuccess = false;
+    if(deviceType == VideoDeviceType::Camera){
+        isSuccess = capture.open(VIDEOSOURCE.toInt());
+        qDebug()<<isSuccess<<VIDEOSOURCE.toInt();
+    }else if(deviceType == VideoDeviceType::File){
+        isSuccess = capture.open(VIDEOSOURCE.toStdString());
+        qDebug()<<isSuccess<<VIDEOSOURCE;
+    }
+
+    if(!isSuccess){
+        qDebug()<<"打开失败!";
+        ToastString(tr("打开失败!%1:%2").arg(deviceType).arg(VIDEOSOURCE));
         ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
         return;
-
     }
     //    else if(!capture.open(!VIDEOSOURCE)){
     //        qDebug()<<"打开摄像头失败!";
@@ -302,7 +314,7 @@ void MainWindow::slotStartSightShare()
     timer_get_video->start(1000/videoFrameRate);//1s采集10张图片
     connect(timer_get_video,&QTimer::timeout,this,&MainWindow::slotGetVideo);
     //将发送出去的视频保存下来
-    QString date = (QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+//    QString date = (QDateTime::currentDateTime().toString("yyyy-MM-dd"));
     QString datetime = (QDateTime::currentDateTime().toString("yyyy-MM-dd hh.mm.ss"));
     QString fileName = tr("./videoSource/%1.avi").arg(datetime);
     if(ui->checkBoxStroeSightShare->isChecked()){
@@ -504,6 +516,7 @@ void MainWindow::InitSightShareForm()
     QNavigationWidget *sightShareWidget = ui->widgetSightShare->getMenuWidget();
     sightShareWidget->addItem("开始共享");
     sightShareWidget->addItem("结束共享");
+    sightShareWidget->addItem("设备选择");
 
     sightShareWidget->setCurrentIndex(1);
 
@@ -542,8 +555,16 @@ void MainWindow::InitSightShareForm()
         if(index == 1){//结束共享
             slotStopSightShare();
         }else if(index == 0){//开始共享
-
             slotStartSightShare();
+        }else if(index == 2){//设备选择
+            DialogSelectVideoSourceDevice *dialog = new DialogSelectVideoSourceDevice(this,VIDEOSOURCE);
+            connect(dialog,&DialogSelectVideoSourceDevice::signal_selectedDevice,this,[=](int type,QString device){
+                VIDEOSOURCE = device;
+                deviceType = (VideoDeviceType)type;
+
+                qDebug()<<deviceType<<VIDEOSOURCE;
+            });
+            dialog->show();
 
         }
     });
@@ -849,9 +870,8 @@ void MainWindow::on_pb_setOtherSocket_clicked()
     QString ip = ui->comboBoxOtherIP->currentText();
     int port = ui->lineEdit_otherPort->text().toInt();
     if(!ui->checkBox_Use4G->isChecked()){
-
         workerUdpSendObj->setHostIpPort(ip,port);
-    }else{//通过4G 像服务器握手
+    }else{//通过4G 向服务器握手
         emit signal_ConnectToServer(ip,port,ui->lineEdit_id->text());
         workerTcpObj->setWaitForReadyTime(ui->lineEdit_waitReadyreadtime->text().toInt());
 

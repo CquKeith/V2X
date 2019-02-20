@@ -10,7 +10,7 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 
     connect(this,&WorkerTcpObject::signalStartTcp,this,&WorkerTcpObject::slotStartTcp);
 
-//    recvBuf = new char[65536];
+    //    recvBuf = new char[65536];
 
     emit signalStartTcp();
 
@@ -20,14 +20,14 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 
 WorkerTcpObject::~WorkerTcpObject()
 {
-//    delete recvBuf;
+    //    delete recvBuf;
     delete m_sendBuf;
 }
 
 void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port,const QString & id)
 {
     tcpSocket->disconnectFromHost();
-    tcpSocket->waitForDisconnected(3000);
+//    tcpSocket->waitForDisconnected(3000);
     tcpSocket->connectToHost(QHostAddress(ip),port);
     tcpSocket->waitForConnected(3000);
     this->id = id;
@@ -68,10 +68,10 @@ void WorkerTcpObject::slotStartTcp()
 void WorkerTcpObject::readTcpInfo()
 {
     while(tcpSocket->bytesAvailable()){
-//        memset(recvBuf, 0, 65536);
-//        int size = tcpSocket->bytesAvailable();
-//        hasRecvedSize += size;
-//        tcpSocket->read(recvBuf, size);
+        //        memset(recvBuf, 0, 65536);
+        //        int size = tcpSocket->bytesAvailable();
+        //        hasRecvedSize += size;
+        //        tcpSocket->read(recvBuf, size);
         QByteArray datagram;
         datagram.resize(tcpSocket->bytesAvailable());
         datagram = tcpSocket->readAll();
@@ -210,13 +210,13 @@ void WorkerTcpObject::readTcpInfoDealBug()
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
 
-            mes->uRecDatatime= QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
+            mes->uRecDatatime = QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
 
             if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
                 emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
                 memCacheMap[key].isVisited = true;
-//                hasRecvedSize = 0;
+                //                hasRecvedSize = 0;
             }
         }
 
@@ -324,7 +324,7 @@ void WorkerTcpObject::slotTcpReadInfo()
 void WorkerTcpObject::slotTcpRecvVideo()
 {
     //    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
-//    readTcpInfo();
+    //    readTcpInfo();
     readTcpInfoDealBug();
 }
 void WorkerTcpObject::tcpSendText(QString messge){
@@ -340,9 +340,9 @@ void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageF
         return;
     }
 
-    qDebug()<<"tcpSendImageFile";
+    qDebug()<<__FUNCTION__;
 
-//    char *m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
+    //    char *m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
     int packageContentSize = MAX_ONE_FRAME_SIZE - sizeof(PackageHead);
 
     int size = imgfile.size();
@@ -401,6 +401,6 @@ void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageF
     }
     imgfile.close();
 
-//    delete m_sendBuf;
+    //    delete m_sendBuf;
 
 }
