@@ -722,6 +722,11 @@ void MainWindow::SyncTimeStamp()
 
 }
 
+void MainWindow::getNtpTime(QString ip, int port)
+{
+
+}
+
 
 /**
  * @brief MainWindow::on_pb_getLocalIP_clicked

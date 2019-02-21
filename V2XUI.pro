@@ -35,6 +35,7 @@ include(./mySpliterWidget/mySpliterWidget.pri)
 include(./myToastWidget/myToastWidget.pri)
 include(./qcustomplot/qcustomplot.pri)
 include(./myVideoLable/qVideoLable.pri)
+include (qntp/qntp.pri)
 
 SOURCES += \
         main.cpp \
