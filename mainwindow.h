@@ -150,6 +150,10 @@ private:
     QString VIDEOSOURCE;
     VideoDeviceType deviceType;
 
+
+    //获取ntp时间
+    __inline void getNtpTime(QString ip="120.25.108.11",int port=123);
+
 };
 
 #endif // MAINWINDOW_H
