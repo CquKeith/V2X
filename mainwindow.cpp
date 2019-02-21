@@ -293,8 +293,8 @@ void MainWindow::slotStartSightShare()
     }else if(deviceType == VideoDeviceType::File){
 //        isSuccess = capture.open(VIDEOSOURCE.toStdString());
 //        VIDEOSOURCE = ".\\videoSource\\test.avi";
-        isSuccess = capture.open("./videoSource/2018-11-24 10.18.51.avi");
-        qDebug()<<isSuccess<<VIDEOSOURCE;
+        isSuccess = capture.open(VIDEOSOURCE.toStdString());
+        qDebug()<<isSuccess<<VIDEOSOURCE<<VIDEOSOURCE2;
     }
 
     if(!isSuccess){
@@ -696,7 +696,7 @@ void MainWindow::InitWorkerThread()
 
     workerTcpObj = new WorkerTcpObject;
     connect(this,&MainWindow::signal_ConnectToServer,workerTcpObj,&WorkerTcpObject::slotConnectToServer);
-    connect(this,&MainWindow::signal_tcpSendImage,workerTcpObj,&WorkerTcpObject::tcpSendImage,Qt::DirectConnection);
+    connect(this,&MainWindow::signal_tcpSendImage,workerTcpObj,&WorkerTcpObject::tcpSendImage,Qt::AutoConnection);
     connect(workerTcpObj,&WorkerTcpObject::signalTcpRecvOK,this,&MainWindow::slotTcpRecv);
     connect(workerTcpObj,&WorkerTcpObject::signalWorkerTcpMsgDialog,this,[=](int type,QString msg){
         Q_UNUSED(type)

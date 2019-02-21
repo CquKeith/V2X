@@ -762,7 +762,7 @@
                      <set>Qt::ImhDigitsOnly|Qt::ImhPreferNumbers</set>
                     </property>
                     <property name="text">
-                     <string>4040</string>
+                     <string>12345</string>
                     </property>
                     <property name="maxLength">
                      <number>5</number>
