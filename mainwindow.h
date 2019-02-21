@@ -43,9 +43,10 @@
 
 //#define VIDEOSOURCE "./videoSource/2018-11-24 10.18.51.avi"
 
-//#define VIDEOSOURCE "./videoSource/2018-11-24 10.18.51.avi"
+#define VIDEOSOURCE2 "./videoSource/2018-11-24 10.18.51.avi"
 //#define VIDEOSOURCE "./videoSource/2018-11-24 10.47.43.avi"
 //#define VIDEOSOURCE 0
+
 
 namespace Ui {
 class MainWindow;

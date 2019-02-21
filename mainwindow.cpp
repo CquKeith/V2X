@@ -291,7 +291,9 @@ void MainWindow::slotStartSightShare()
         isSuccess = capture.open(VIDEOSOURCE.toInt());
         qDebug()<<isSuccess<<VIDEOSOURCE.toInt();
     }else if(deviceType == VideoDeviceType::File){
-        isSuccess = capture.open(VIDEOSOURCE.toStdString());
+//        isSuccess = capture.open(VIDEOSOURCE.toStdString());
+//        VIDEOSOURCE = ".\\videoSource\\test.avi";
+        isSuccess = capture.open("./videoSource/2018-11-24 10.18.51.avi");
         qDebug()<<isSuccess<<VIDEOSOURCE;
     }
 

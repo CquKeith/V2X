@@ -63,16 +63,16 @@ FORMS += \
 RESOURCES += \
     skin.qrc \
     staticrsrc.qrc
-#INCLUDEPATH += D:/Qt/opencv2.4.9/build/include \
-#               D:/Qt/opencv2.4.9/build/include/opencv \
-#               D:/Qt/opencv2.4.9/build/include/opencv2
+INCLUDEPATH += D:/Qt/opencv2.4.9/build/include \
+               D:/Qt/opencv2.4.9/build/include/opencv \
+               D:/Qt/opencv2.4.9/build/include/opencv2
 
-#LIBS += -L D:/Qt/opencv2.4.9/MinGW/lib/libopencv_*
+LIBS += -L D:/Qt/opencv2.4.9/MinGW/lib/libopencv_*
 
-INCLUDEPATH += D:/Qt/opencv3.1.0/build/include \
-               D:/Qt/opencv3.1.0/build/include/opencv \
-               D:/Qt/opencv3.1.0/build/include/opencv2
+#INCLUDEPATH += D:/Qt/opencv3.1.0/build/include \
+#               D:/Qt/opencv3.1.0/build/include/opencv \
+#               D:/Qt/opencv3.1.0/build/include/opencv2
 
-LIBS += -L D:/Qt/opencv3.1.0/MinGW/lib/libopencv_*
+#LIBS += -L D:/Qt/opencv3.1.0/MinGW/lib/libopencv_*
 
 DISTFILES +=
