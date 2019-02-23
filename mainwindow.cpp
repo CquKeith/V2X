@@ -249,7 +249,11 @@ void MainWindow::slotGetVideo()
 {
     Mat mat;
     capture >> mat;
-    if(mat.empty()) return;
+    if(mat.empty()) {
+
+        slotStopSightShare();
+        return;
+    }
     //    ++pic_num_hasSended;
     if(ui->checkBoxStroeSightShare->isChecked()){
         videowriter << mat;
@@ -355,8 +359,10 @@ void MainWindow::slotStartSightShare()
  */
 void MainWindow::slotStopSightShare()
 {
+//    ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
     if(capture.isOpened()){
         capture.release();
+
         timer_get_video->deleteLater();
 
         label_videoMy->setPixmap(QPixmap(defaultCarPicPath));
