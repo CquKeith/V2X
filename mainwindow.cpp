@@ -268,6 +268,7 @@ void MainWindow::slotGetVideo()
 
     if(ui->checkBox_Use4G->isChecked()){
         emit signal_tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
+//        workerTcpObj->tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
 //        qDebug()<<__FUNCTION__;
     }else{
         emit signal_udpSendImage("temp.jpg",MsgType::VideoType,"JPG");

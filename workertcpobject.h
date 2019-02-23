@@ -73,18 +73,28 @@ private:
     //总共发了第几章图片
     quint64 picnum;
 
+
     int waitForReadyTime;
 
     quint32 hasRecvedSize;
 
     void readTcpInfo();
-    void readTcpInfoDealBug();
+    void readTcpInfoByMultipleFrames();
+    void readTcpInfoOneTime();
+
+    void sendOneImageByMultipleFrames(QString filepath, int msgtype, QString imageFormat);
+    void sendOneImageOneTime(QString filepath, int msgtype, QString imageFormat);
 
     //缓存上一次或多次的未处理的数据
     //这个用来处理，重新粘包
     QByteArray m_buffer;
 
     char *m_sendBuf;
+
+    //以流的方式接收
+     qint64 imageBlockSize;//图片的大小
+     qint64 startTimestemp;//发送时候的时间戳
+     qint64 imageNumberCurr;//当前接收的图片的id
 //    char * m_buf;
 };
 

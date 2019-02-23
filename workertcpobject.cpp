@@ -42,6 +42,9 @@ void WorkerTcpObject::slotStartTcp()
     tcpSocket = new QTcpSocket;
     qDebug()<<__FUNCTION__<<QThread::currentThreadId();
     waitForReadyTime = 0;
+    imageBlockSize = 0;
+    imageNumberCurr = 0;
+    startTimestemp = 0;
     connect(tcpSocket,&QTcpSocket::connected,[=]{
         qDebug()<<"连接上服务器";
         emit signalWorkerTcpMsgDialog(0,"成功连上服务器");
@@ -119,7 +122,7 @@ void WorkerTcpObject::readTcpInfo()
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
 
-            mes->uRecDatatime= QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
+            mes->uRecDatatime= QDateTime::currentMSecsSinceEpoch();; //获取接收时间戳
 
             if (hasRecvedSize >= (mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize)) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
@@ -135,10 +138,10 @@ void WorkerTcpObject::readTcpInfo()
  * @brief WorkerTcpObject::readTcpInfoDealBug
  * 解决粘包的问题
  */
-void WorkerTcpObject::readTcpInfoDealBug()
+void WorkerTcpObject::readTcpInfoByMultipleFrames()
 {
     //缓冲区没有数据，直接无视
-    if(tcpSocket->bytesAvailable()<=0){
+    if(tcpSocket->bytesAvailable()<=0 || tcpSocket->bytesAvailable() < sizeof(PackageHead)){
         return;
     }
     //临时获得从缓存区取出来的数据，但是不确定每次取出来的是多少。
@@ -210,7 +213,7 @@ void WorkerTcpObject::readTcpInfoDealBug()
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
 
-            mes->uRecDatatime = QDateTime::currentDateTime().toMSecsSinceEpoch();; //获取接收时间戳
+            mes->uRecDatatime = QDateTime::currentMSecsSinceEpoch(); //获取接收时间戳
 
             if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
@@ -230,6 +233,187 @@ void WorkerTcpObject::readTcpInfoDealBug()
         m_buffer = buffer;
     }
 
+
+}
+/**
+ * @brief WorkerTcpObject::readTcpInfoOneTime
+ * 以流的形式 每次接收一张图片
+ */
+void WorkerTcpObject::readTcpInfoOneTime()
+{
+    QByteArray message;//存放从服务器接收到的字节流数据
+    QDataStream in(tcpSocket);	//将客户端套接字与输入数据流对象in绑定
+
+    in.setVersion(QDataStream::Qt_5_9);//设置数据流的版本
+
+    /*接收端的 这部分控制逻辑很重要*/
+
+    if (imageBlockSize == 0)
+    {
+        //如果imageBlockSize == 0 则说明,一幅图像的大小信息还未传输过来
+
+        //uint64是8字节的8 Bytes  64bit
+        //判断接收的数据是否有8字节（文件大小信息）
+        //如果有则保存到basize变量中，没有则返回，继续接收数据
+        if (tcpSocket->bytesAvailable() < (int)sizeof(quint64))
+        {//一幅图像的大小信息还未传输过来
+            return;
+        }
+        in >> imageBlockSize;//一幅图像的大小信息
+
+
+//        if (imageBlockSize == (quint64)0xFFFFFFFFFFFFFFFF)//视频结束的标注符
+//        {
+//            tcpSocket->close();
+//            QMessageBox::information(this, tr("warning"), tr("the video is end!"));
+//            return;
+//        }
+
+//        qDebug() << "imageBlockSize  is " << imageBlockSize;
+//        QString imageBlockS = "imageBlockSize  is " + QString::number(imageBlockSize) + "Bytes!";
+//        ui->info->append(imageBlockS);
+        message.resize(imageBlockSize);
+
+    }
+    //如果没有得到一幅图像的全部数据，则返回继续接收数据
+    if (tcpSocket->bytesAvailable() < imageBlockSize)
+    {
+        return;
+    }
+
+    in >> imageNumberCurr;
+    in >> startTimestemp;
+
+    in >> message;//一幅图像所有像素的完整字节流
+
+
+
+    emit signalTcpRecvOK((int)MsgType::VideoType,message.data(), imageBlockSize);
+    emit signalSinglePicDelayAndFrameSize(imageNumberCurr,QDateTime::currentMSecsSinceEpoch() - startTimestemp,imageBlockSize/1024);
+
+
+    imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
+    startTimestemp = 0;
+
+
+//    QImage img;
+//    //img.loadFromData(rdc,"JPEG");//解释为jpg格式的图像
+//    img.loadFromData(message);//解释为jpg格式的图像
+
+//    QPixmap pixmap = QPixmap::fromImage(img);
+//    pixmap.scaled(ui->label_imageShow->size());
+//    ui->label_imageShow->setPixmap(pixmap);
+}
+/**
+ * @brief WorkerTcpObject::sendOneImageByMultipleFrames
+ * 一张图片分为多帧发送
+ */
+void WorkerTcpObject::sendOneImageByMultipleFrames(QString filepath, int msgtype, QString imageFormat)
+{
+    //下面开始组每一帧
+    QFile imgfile(filepath);
+    if(!imgfile.open(QIODevice::ReadOnly)){
+        emit signalWorkerTcpMsgDialog(WrokerObjectrMsgTypeToDlg::Critical,tr("打开文件失败:%1").arg(imgfile.errorString()));
+        return;
+    }
+
+    qDebug()<<__FUNCTION__<<QThread::currentThreadId();
+
+    //    char *m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
+    int packageContentSize = MAX_ONE_FRAME_SIZE - sizeof(PackageHead);
+
+    int size = imgfile.size();
+    int num = 0;
+    int count = 0;
+    int endSize = size%packageContentSize;
+    if (endSize == 0) {
+        num = size/packageContentSize;
+    }
+    else {
+        num = size/packageContentSize+1;
+    }
+
+    ++picnum;
+
+    while (count < num) {
+        memset(m_sendBuf, 0, MAX_ONE_FRAME_SIZE);
+
+        PackageHead mes;
+        mes.msgType = (MsgType)msgtype;
+        mes.uTransFrameHdrSize = sizeof(PackageHead);
+        if ((count+1) != num) {
+            mes.uTransFrameSize = packageContentSize;
+        }
+        else {
+            mes.uTransFrameSize = endSize;
+        }
+        mes.uDataFrameSize = size;
+        mes.uDataFrameTotal = num;
+        mes.uDataFrameCurr = count+1;
+        mes.uDataInFrameOffset = count*packageContentSize;
+
+        mes.uPicnum = picnum;
+        mes.uSendDatatime = QDateTime::currentMSecsSinceEpoch();
+        mes.uRecDatatime = 0;
+
+        //放入图片的格式
+        //        memcpy(mes.imageFormat,imageFormat.toStdString().data(),imageFormat.length());
+
+        imgfile.read(m_sendBuf+sizeof(PackageHead), packageContentSize);
+
+        memcpy(m_sendBuf, (char *)&mes, sizeof(PackageHead));
+
+        //放缓发送的速度
+        //        QTime dieTime = QTime::currentTime().addMSecs(1);
+        //        while( QTime::currentTime() < dieTime )
+        //            QCoreApplication::processEvents(QEventLoop::AllEvents,100);
+        tcpSocket->write(m_sendBuf, mes.uTransFrameSize+mes.uTransFrameHdrSize);
+        //        tcpSocket->write("\n");
+        tcpSocket->flush();
+
+        tcpSocket->waitForBytesWritten();
+
+        count++;
+
+    }
+    imgfile.close();
+
+    //    delete m_sendBuf;
+}
+/**
+ * @brief WorkerTcpObject::sendOneImageOneTime
+ * 通过流的方式 一次发送一张图片
+ * @param filepath
+ * @param msgtype
+ * @param imageFormat
+ */
+void WorkerTcpObject::sendOneImageOneTime(QString filepath, int msgtype, QString imageFormat)
+{
+    QByteArray byte;	//The QByteArray class provides an array of bytes.
+    QBuffer buf(&byte);		//缓存区域
+
+    QImage image(filepath);
+    image.save(&buf, imageFormat.toStdString().data());	//将图像以jpg的压缩方式压缩了以后保存在 buf当中
+
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);	//二进制只写输出流
+    out.setVersion(QDataStream::Qt_5_9);	//输出流的版本
+    /*当操作复杂数据类型时，我们就要确保读取和写入时的QDataStream版本是一样的，简单类型，比如char，short，int，char* 等不需要指定版本也行*/
+
+
+    ++picnum;
+
+    out << (quint64)0;	//写入套接字图像数据的大小
+    out << (quint64)0;	//写入套接字 当前是第几张图片
+    out << (quint64)0;	//写入套接字 当前时间戳
+    out << byte;			//写入套接字的经压缩-编码后的图像数据
+
+    out.device()->seek(0);
+    out << (quint64)(ba.size() - sizeof(quint64));//写入套接字的经压缩-编码后的图像数据的大小
+
+    out << picnum;
+    out << QDateTime::currentMSecsSinceEpoch();
+    tcpSocket->write(ba);	//将整块数据写入套接字
 
 }
 
@@ -325,7 +509,8 @@ void WorkerTcpObject::slotTcpRecvVideo()
 {
     //    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
     //    readTcpInfo();
-    readTcpInfoDealBug();
+//    readTcpInfoByMultipleFrames();
+    readTcpInfoOneTime();
 }
 void WorkerTcpObject::tcpSendText(QString messge){
 
@@ -333,74 +518,6 @@ void WorkerTcpObject::tcpSendText(QString messge){
 void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageFormat)
 {
 
-    //下面开始组每一帧
-    QFile imgfile(filepath);
-    if(!imgfile.open(QIODevice::ReadOnly)){
-        emit signalWorkerTcpMsgDialog(WrokerObjectrMsgTypeToDlg::Critical,tr("打开文件失败:%1").arg(imgfile.errorString()));
-        return;
-    }
-
-    qDebug()<<__FUNCTION__;
-
-    //    char *m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
-    int packageContentSize = MAX_ONE_FRAME_SIZE - sizeof(PackageHead);
-
-    int size = imgfile.size();
-    int num = 0;
-    int count = 0;
-    int endSize = size%packageContentSize;
-    if (endSize == 0) {
-        num = size/packageContentSize;
-    }
-    else {
-        num = size/packageContentSize+1;
-    }
-
-    ++picnum;
-
-    while (count < num) {
-        memset(m_sendBuf, 0, MAX_ONE_FRAME_SIZE);
-
-        PackageHead mes;
-        mes.msgType = (MsgType)msgtype;
-        mes.uTransFrameHdrSize = sizeof(PackageHead);
-        if ((count+1) != num) {
-            mes.uTransFrameSize = packageContentSize;
-        }
-        else {
-            mes.uTransFrameSize = endSize;
-        }
-        mes.uDataFrameSize = size;
-        mes.uDataFrameTotal = num;
-        mes.uDataFrameCurr = count+1;
-        mes.uDataInFrameOffset = count*packageContentSize;
-
-        mes.uPicnum = picnum;
-        mes.uSendDatatime = QDateTime::currentDateTime().toMSecsSinceEpoch();
-        mes.uRecDatatime = 0;
-
-        //放入图片的格式
-        //        memcpy(mes.imageFormat,imageFormat.toStdString().data(),imageFormat.length());
-
-        imgfile.read(m_sendBuf+sizeof(PackageHead), packageContentSize);
-
-        memcpy(m_sendBuf, (char *)&mes, sizeof(PackageHead));
-
-        //放缓发送的速度
-        //        QTime dieTime = QTime::currentTime().addMSecs(1);
-        //        while( QTime::currentTime() < dieTime )
-        //            QCoreApplication::processEvents(QEventLoop::AllEvents,100);
-        tcpSocket->write(m_sendBuf, mes.uTransFrameSize+mes.uTransFrameHdrSize);
-        //        tcpSocket->write("\n");
-        tcpSocket->flush();
-
-        tcpSocket->waitForBytesWritten();
-
-        count++;
-
-    }
-    imgfile.close();
-
-    //    delete m_sendBuf;
+    sendOneImageOneTime(filepath,msgtype,imageFormat);
 
 }
