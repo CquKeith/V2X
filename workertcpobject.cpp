@@ -286,10 +286,11 @@ void WorkerTcpObject::readTcpInfoOneTime()
 
     in >> message;//一幅图像所有像素的完整字节流
 
+    qint64 endTimestamp = QDateTime::currentMSecsSinceEpoch();
 
 
     emit signalTcpRecvOK((int)MsgType::VideoType,message.data(), imageBlockSize);
-    emit signalSinglePicDelayAndFrameSize(imageNumberCurr,QDateTime::currentMSecsSinceEpoch() - startTimestemp,imageBlockSize/1024);
+    emit signalSinglePicDelayAndFrameSize(imageNumberCurr,endTimestamp - startTimestemp,(imageBlockSize+sizeof(qint64)*3)/1024);
 
 
     imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
