@@ -382,6 +382,10 @@ void MainWindow::slotStopSightShare()
 
 
     }
+
+    if(videowriter.isOpened()){
+        videowriter.release();
+    }
 }
 /**
  * @brief MainWindow::InitStyle
