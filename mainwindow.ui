@@ -651,7 +651,7 @@
                     </rect>
                    </property>
                    <property name="text">
-                    <string>1</string>
+                    <string>10</string>
                    </property>
                   </widget>
                   <widget class="QLabel" name="label_9">
@@ -803,12 +803,12 @@
                     </property>
                     <item>
                      <property name="text">
-                      <string>127.0.0.1</string>
+                      <string>39.98.200.155</string>
                      </property>
                     </item>
                     <item>
                      <property name="text">
-                      <string>39.98.192.123</string>
+                      <string>127.0.0.1</string>
                      </property>
                     </item>
                     <item>

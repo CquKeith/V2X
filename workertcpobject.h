@@ -17,6 +17,8 @@
 #include "imagetool.h"
 #include "msghead.h"
 
+
+
 class WorkerTcpObject : public QObject
 {
     Q_OBJECT
@@ -96,6 +98,9 @@ private:
      qint64 startTimestemp;//发送时候的时间戳
      qint64 imageNumberCurr;//当前接收的图片的id
 //    char * m_buf;
+
+     // Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构体
+     QMap<quint16,s_memCache> tcpMemCacheMap;
 };
 
 #endif // WORKERTCPSENDOBJECT_H

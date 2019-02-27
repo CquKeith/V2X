@@ -65,6 +65,8 @@ public:
 //    __inline quint64 getPic_num_hasSended() const;
 //    __inline void clearPicNum(){pic_num_hasSended = 0;}
 
+    Q_INVOKABLE void showRecvImage(QPixmap &pixmap){label_video->setPixmap(pixmap);}
+
 signals:
     void signal_udpSendText(QString);   //使用线程发送字符串
     void signal_udpSendImage(QString,int,QString);  //使用线程发送一个图片

@@ -360,6 +360,10 @@ void MainWindow::slotStartSightShare()
 void MainWindow::slotStopSightShare()
 {
 //    ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
+
+    //发送给对方默认的封面 统计时延时不需要，应用时可以用上
+//    emit signal_tcpSendImage(defaultCarPicPath,MsgType::VideoType,"JPG");
+
     if(capture.isOpened()){
         capture.release();
 
@@ -385,7 +389,6 @@ void MainWindow::slotStopSightShare()
         timer_sightShareTimeLeft->deleteLater();
 
         label_sightShare->clear();
-
 
     }
 
@@ -603,14 +606,14 @@ void MainWindow::InitAnalyseForm()
 
     chartPic = new QCustomChart(ui->pageAnalyseEachPicture);
     ui->pageAnalyseEachPicture->layout()->addWidget(chartPic);
-    connect(chartPic,&QCustomChart::signalExportExcelDone,[=]{
-        QMessageBox::information(this,tr("tips"),tr("Excel导出完毕"));
+    connect(chartPic,&QCustomChart::signalQCustomToGUI,[=](QString msg){
+        QMessageBox::information(this,tr("tips"),msg);
     });
 
     chartPicSize = new QCustomChart(ui->pageAnalyseEachFrame);
     ui->pageAnalyseEachFrame->layout()->addWidget(chartPicSize);
-    connect(chartPicSize,&QCustomChart::signalExportExcelDone,[=]{
-        QMessageBox::information(this,tr("tips"),tr("Excel导出完毕"));
+    connect(chartPicSize,&QCustomChart::signalQCustomToGUI,[=](QString msg){
+        QMessageBox::information(this,tr("tips"),msg);
     });
 
     chartPic->setTitle("单张图片分析");

@@ -22,12 +22,13 @@ WorkerTcpObject::~WorkerTcpObject()
 {
     //    delete recvBuf;
     delete m_sendBuf;
+
 }
 
 void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port,const QString & id)
 {
     tcpSocket->disconnectFromHost();
-//    tcpSocket->waitForDisconnected(3000);
+    //    tcpSocket->waitForDisconnected(3000);
     tcpSocket->connectToHost(QHostAddress(ip),port);
     tcpSocket->waitForConnected(3000);
     this->id = id;
@@ -241,69 +242,98 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
  */
 void WorkerTcpObject::readTcpInfoOneTime()
 {
-    QByteArray message;//存放从服务器接收到的字节流数据
-    QDataStream in(tcpSocket);	//将客户端套接字与输入数据流对象in绑定
+    while(tcpSocket->bytesAvailable()>0){
 
-    in.setVersion(QDataStream::Qt_5_9);//设置数据流的版本
+        QByteArray message;//存放从服务器接收到的字节流数据
+        QDataStream in(tcpSocket);	//将客户端套接字与输入数据流对象in绑定
 
-    /*接收端的 这部分控制逻辑很重要*/
+        in.setVersion(QDataStream::Qt_5_9);//设置数据流的版本
 
-    if (imageBlockSize == 0)
-    {
-        //如果imageBlockSize == 0 则说明,一幅图像的大小信息还未传输过来
 
-        //uint64是8字节的8 Bytes  64bit
-        //判断接收的数据是否有8字节（文件大小信息）
-        //如果有则保存到basize变量中，没有则返回，继续接收数据
-        if (tcpSocket->bytesAvailable() < (int)sizeof(quint64))
-        {//一幅图像的大小信息还未传输过来
-            return;
+        /*接收端的 这部分控制逻辑很重要*/
+        if (imageBlockSize == 0)
+        {
+            //如果imageBlockSize == 0 则说明,一幅图像的大小信息还未传输过来
+
+            //uint64是8字节的8 Bytes  64bit
+            //判断接收的数据是否有8字节（文件大小信息）
+            //如果有则保存到basize变量中，没有则返回，继续接收数据
+            if (tcpSocket->bytesAvailable() < (int)sizeof(quint64))
+            {//一幅图像的大小信息还未传输过来
+                break;
+            }
+            in >> imageBlockSize;//一幅图像的大小信息
+
+
+            //        if (imageBlockSize == (quint64)0xFFFFFFFFFFFFFFFF)//视频结束的标注符
+            //        {
+            //            tcpSocket->close();
+            //            QMessageBox::information(this, tr("warning"), tr("the video is end!"));
+            //            return;
+            //        }
+
+            //        qDebug() << "imageBlockSize  is " << imageBlockSize;
+            //        QString imageBlockS = "imageBlockSize  is " + QString::number(imageBlockSize) + "Bytes!";
+            //        ui->info->append(imageBlockS);
+            message.resize(imageBlockSize);
+
         }
-        in >> imageBlockSize;//一幅图像的大小信息
+        //如果没有得到一幅图像的全部数据，则返回继续接收数据
+        if (tcpSocket->bytesAvailable() < imageBlockSize)
+        {
+            break;
+        }
+
+        in >> imageNumberCurr;
+        in >> startTimestemp;
+
+        in >> message;//一幅图像所有像素的完整字节流
 
 
-//        if (imageBlockSize == (quint64)0xFFFFFFFFFFFFFFFF)//视频结束的标注符
-//        {
-//            tcpSocket->close();
-//            QMessageBox::information(this, tr("warning"), tr("the video is end!"));
-//            return;
-//        }
 
-//        qDebug() << "imageBlockSize  is " << imageBlockSize;
-//        QString imageBlockS = "imageBlockSize  is " + QString::number(imageBlockSize) + "Bytes!";
-//        ui->info->append(imageBlockS);
-        message.resize(imageBlockSize);
+        qint64 endTimestamp = QDateTime::currentMSecsSinceEpoch();
+
+        quint16 key = imageNumberCurr % MEM_CACHE_MAX_SIZE;
+        /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
+        if(tcpMemCacheMap.contains(key)){
+            if(tcpMemCacheMap[key].isVisited){
+                //重复使用此key对应的内存
+                memcpy(tcpMemCacheMap[key].memStart,message.data(),imageBlockSize);
+                tcpMemCacheMap[key].memSize = imageBlockSize;
+                tcpMemCacheMap[key].picNum = imageNumberCurr;
+
+            }
+        }else{
+            //第一次使用此key对应的空间 此时内存还没申请
+            s_memCache s;
+            s.isVisited = false;
+            s.memSize = imageBlockSize;
+            s.picNum = imageNumberCurr;
+            s.memStart = new char[MAX_IMAGE_SIZE];
+            memcpy(s.memStart,message.data(),imageBlockSize);
+            tcpMemCacheMap.insert(key,s);
+            //            qDebug()<<"first use mem cache";
+        }
+
+
+        emit signalTcpRecvOK((int)MsgType::VideoType,tcpMemCacheMap[key].memStart, imageBlockSize);
+        emit signalSinglePicDelayAndFrameSize(imageNumberCurr,endTimestamp - startTimestemp,(double)(imageBlockSize+sizeof(qint64)*3)/1024);
+
+
+        imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
+        startTimestemp = 0;
+
+        tcpMemCacheMap[key].isVisited = true;
+
 
     }
-    //如果没有得到一幅图像的全部数据，则返回继续接收数据
-    if (tcpSocket->bytesAvailable() < imageBlockSize)
-    {
-        return;
-    }
+    //    QImage img;
+    //    //img.loadFromData(rdc,"JPEG");//解释为jpg格式的图像
+    //    img.loadFromData(message);//解释为jpg格式的图像
 
-    in >> imageNumberCurr;
-    in >> startTimestemp;
-
-    in >> message;//一幅图像所有像素的完整字节流
-
-    qint64 endTimestamp = QDateTime::currentMSecsSinceEpoch();
-
-
-    emit signalTcpRecvOK((int)MsgType::VideoType,message.data(), imageBlockSize);
-    emit signalSinglePicDelayAndFrameSize(imageNumberCurr,endTimestamp - startTimestemp,(imageBlockSize+sizeof(qint64)*3)/1024);
-
-
-    imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
-    startTimestemp = 0;
-
-
-//    QImage img;
-//    //img.loadFromData(rdc,"JPEG");//解释为jpg格式的图像
-//    img.loadFromData(message);//解释为jpg格式的图像
-
-//    QPixmap pixmap = QPixmap::fromImage(img);
-//    pixmap.scaled(ui->label_imageShow->size());
-//    ui->label_imageShow->setPixmap(pixmap);
+    //    QPixmap pixmap = QPixmap::fromImage(img);
+    //    pixmap.scaled(ui->label_imageShow->size());
+    //    ui->label_imageShow->setPixmap(pixmap);
 }
 /**
  * @brief WorkerTcpObject::sendOneImageByMultipleFrames
@@ -510,7 +540,7 @@ void WorkerTcpObject::slotTcpRecvVideo()
 {
     //    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
     //    readTcpInfo();
-//    readTcpInfoByMultipleFrames();
+    //    readTcpInfoByMultipleFrames();
     readTcpInfoOneTime();
 }
 void WorkerTcpObject::tcpSendText(QString messge){

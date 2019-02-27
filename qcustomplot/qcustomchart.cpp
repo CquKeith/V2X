@@ -68,7 +68,7 @@ void QCustomChart::setData(const QVector<double> &keys, const QVector<double> &v
 void QCustomChart::addData(double key, double value)
 {
     m_pCustomPlot->graph(0)->addData(key,value);
-    m_data.append(m_Data(key,value));
+    m_dataList.append(m_Data(key,value));
 
     m_pTextBrowser->append(tr("%1：%2  %3：%4").arg(getXaxisLabel()).arg(key).arg(getYaxisLabel()).arg(value));
     slotRefresh();
@@ -89,8 +89,10 @@ void QCustomChart::createWindow()
     m_pPrimaryAction = new QAction(QIcon(":/chart/data"), tr("原始数据"), this);
     m_pChartAction = new QAction(QIcon(":/chart/line"), tr("图形"), this);
     m_pRefreshAction = new QAction(QIcon(":/chart/refresh"), tr("刷新"), this);
+     m_pGetAverage = new QAction(QIcon(":/chart/bar"),tr("平均值"),this);
     m_pDownloadAction = new QAction(QIcon(":/chart/download"), tr("下载"), this);
     m_clearContent = new QAction(QIcon(":/chart/images/trash"),tr("清空"),this);
+
 
     //Download as picture or excel
     mDownloadMenu=new QMenu(this);
@@ -117,6 +119,7 @@ void QCustomChart::createWindow()
     connect(m_pRefreshAction, SIGNAL(triggered(bool)), this, SLOT(slotRefresh()));
     //    connect(m_pDownloadAction, SIGNAL(triggered(bool)), this, SLOT(slotDownload()));
     connect(m_clearContent,SIGNAL(triggered(bool)),this,SLOT(slotClear()));
+    connect(m_pGetAverage,SIGNAL(triggered(bool)),this,SLOT(slotCalcAvg()));
 
     // 将前面的按钮都放在一起
     m_pToolBar = new QToolBar(this);
@@ -134,6 +137,7 @@ void QCustomChart::createWindow()
     m_pToolBar->addAction(m_pPrimaryAction);
     m_pToolBar->addAction(m_pChartAction);
     m_pToolBar->addAction(m_pRefreshAction);
+    m_pToolBar->addAction(m_pGetAverage);
 
     m_pToolBar->addAction(m_pDownloadAction);
 
@@ -290,7 +294,7 @@ void QCustomChart::saveAsExcel()
         cellrow++;
 
         //        int rows=this->model->rowCount();
-        int rows = m_data.size();
+        int rows = m_dataList.size();
         for(int i=0;i<rows;i++){
             QString A="A"+QString::number(cellrow);//设置要操作的单元格，如A1
             QString B="B"+QString::number(cellrow);
@@ -300,14 +304,14 @@ void QCustomChart::saveAsExcel()
             cellB = worksheet->querySubObject("Range(QVariant, QVariant)",B);
             //            cellC=worksheet->querySubObject("Range(QVariant, QVariant)",C);
             //            cellD=worksheet->querySubObject("Range(QVariant, QVariant)",D);
-            cellA->dynamicCall("SetValue(const QVariant&)",QVariant(m_data.at(cellrow-2).V));//设置单元格的值
-            cellB->dynamicCall("SetValue(const QVariant&)",QVariant(m_data.at(cellrow-2).I));
+            cellA->dynamicCall("SetValue(const QVariant&)",QVariant(m_dataList.at(cellrow-2).key));//设置单元格的值
+            cellB->dynamicCall("SetValue(const QVariant&)",QVariant(m_dataList.at(cellrow-2).value));
             //            cellC->dynamicCall("SetValue(const QVariant&)",QVariant("this->model->item(i,2)->data(Qt::DisplayRole).toString()"));
             //            cellD->dynamicCall("SetValue(const QVariant&)",QVariant("this->model->item(i,3)->data(Qt::DisplayRole).toString()"));
             cellrow++;
         }
 
-        emit signalExportExcelDone();
+        emit signalQCustomToGUI("Excel导出完毕");
 
         workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(filepath));//保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
         workbook->dynamicCall("Close()");//关闭工作簿
@@ -329,13 +333,29 @@ void QCustomChart::slotChart()
 
 void QCustomChart::slotClear()
 {
-    m_data.clear();
+    m_dataList.clear();
     m_pTextBrowser->clear();
 
     // 清空现有图形
     m_pCustomPlot->graph(0)->data().data()->clear();
     //    m_pCustomPlot->clearItems();
     slotRefresh();
+}
+/**
+ * @brief QCustomChart::calcAvg
+ * 计算该图表中的平均值，并传递给GUI线程
+ */
+double QCustomChart::slotCalcAvg()
+{
+    double sum = 0,avg = 0;
+    int size = m_dataList.size();
+
+    foreach (m_Data m, m_dataList) {
+        sum += m.value;
+    }
+    avg = size == 0?0:(sum / size);
+    emit signalQCustomToGUI(tr("%1组数据的平均值是：%2").arg(size).arg(avg));
+    return avg;
 }
 
 void QCustomChart::mousePress(QMouseEvent *mevent)

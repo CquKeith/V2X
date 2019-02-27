@@ -42,7 +42,7 @@ private:
     void initCustomPlot();
 
 signals:
-    void signalExportExcelDone();
+    void signalQCustomToGUI(QString msg);
 public slots:
     void slotRefresh(); // restore
     void slotDownload();
@@ -50,6 +50,7 @@ public slots:
     void slotChart();
 
     void slotClear();
+    double slotCalcAvg();// calc average value
 
     void saveAsImage();
     void saveAsExcel();
@@ -76,6 +77,7 @@ private:
     QAction *m_pRefreshAction;
     QAction *m_clearContent;
     QAction *m_pDownloadAction;
+    QAction *m_pGetAverage;
 
     QMenu *mDownloadMenu;
     QAction *downloadtoPic;
@@ -86,11 +88,11 @@ private:
 
     struct m_Data
     {
-        m_Data(double Vvalue,double Ivalue):V(Vvalue),I(Ivalue){}
-        double V;
-        double I;
+        m_Data(double k,double v):key(k),value(v){}
+        double key;
+        double value;
     };
-    QList<m_Data> m_data;
+    QList<m_Data> m_dataList;
 
 };
 ///////////////////////////////////////////////////////////
