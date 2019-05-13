@@ -34,10 +34,14 @@
 //画图
 #include "qcustomplot/qcustomchart.h"
 
-//可以双击 单击的lable
+//可以双击 label
 #include "myVideoLable/qvideolable.h"
+//结合combobox的label
+#include "myComboxLabel/comboxlabel.h"
 
 #include "dialogselectvideosourcedevice.h"
+
+//#include <QMetaType>
 
 #define SIGHT_SHARE_TIME 9999
 
@@ -51,6 +55,7 @@
 namespace Ui {
 class MainWindow;
 }
+class ComboxLabel;
 using namespace cv;
 QImage MatToQImage(const cv::Mat& mat);
 cv::Mat QImage2cvMat(QImage &image);
@@ -65,11 +70,11 @@ public:
 //    __inline quint64 getPic_num_hasSended() const;
 //    __inline void clearPicNum(){pic_num_hasSended = 0;}
 
-    Q_INVOKABLE void showRecvImage(QPixmap &pixmap){label_video->setPixmap(pixmap);}
+    Q_INVOKABLE void showRecvImage(QPixmap &pixmap){label_videoReceived->setPixmap(pixmap);}
 
 signals:
     void signal_udpSendText(QString);   //使用线程发送字符串
-    void signal_udpSendImage(QString,int,QString);  //使用线程发送一个图片
+    void signal_udpSendImage(QString,int,QString,int);  //使用线程发送一个图片
     void signal_ChangeUdpListion(QString,int);      //通知udp发送的线程，更改本地监听的IP和端口号
 
     void signal_tcpSendText(QString);
@@ -81,7 +86,7 @@ signals:
 private slots:
     void menuButtonCilck(); //各个一级菜单的点击信号
     void backToMenu();  //返回主菜单
-    void slotRecv(int msgtype, char *buf, int len); //收到消息 在GUI线程显示
+    void slotRecv(int msgtype, char *buf, int len, int quality); //收到消息 在GUI线程显示
     void slotTcpRecv(int msgtype, char *buf, int len);
     void slotPlotSinglePicDelayAndFrameSize(uint num, qint64 delaytime, double frameSize);//单个图片的传输时延
     void slotPlotSingleFrameDelay(uint num, qint64 delaytime);//MAC帧的传输时延
@@ -133,12 +138,12 @@ private:
 
     //接收实时视频显示
 //    QNavigationWidget * realtimeSetting;
-    qVideoLable * label_video;
+    qVideoLable * label_videoReceived;
     // 显示视频来源
     QLabel *labelVideoFrom;
 
     //分享实时视频显示
-    qVideoLable *label_videoMy;
+    qVideoLable *label_videoRealTimeSight;
     //默认的汽车的一个图片
     QString defaultCarPicPath;
 
@@ -154,8 +159,8 @@ private:
     VideoDeviceType deviceType;
 
 
-    //获取ntp时间
-    __inline void getNtpTime(QString ip="120.25.108.11",int port=123);
+    /*显示当前使用的网络接口和视频是质量*/
+    ComboxLabel *sender_interface,*sender_quality,*receiver_interface,*receiver_quality;
 
 };
 

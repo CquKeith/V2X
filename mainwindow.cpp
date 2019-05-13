@@ -5,7 +5,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    SyncTimeStamp();//同步时间戳
+    //    SyncTimeStamp();//同步时间戳
 
     ui->setupUi(this);
     defaultCarPicPath = "./images/car.jpg";
@@ -40,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
     deviceType=VideoDeviceType::File;
 
     //    QTimer::singleShot(10,[=]{ui->widgetRealTimeVideo->refreshForm();ui->widgetSightShare->refreshForm();});
+//    qRegisterMetaType<VideoQualityType>("VideoQualityType");
+
 }
 
 MainWindow::~MainWindow()
@@ -104,7 +106,7 @@ void MainWindow::backToMenu()
  * @param buf 通过内存共享实现线程之间的通信，读取收到的数据
  * @param len 内容的长度
  */
-void MainWindow::slotRecv(int msgtype, char *buf, int len)
+void MainWindow::slotRecv(int msgtype, char *buf, int len,int quality)
 {
     //消息处理 放置界面假死
     //    QCoreApplication::processEvents(QEventLoop::AllEvents,100);
@@ -115,16 +117,16 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
     {
 
         //            ui->tabWidget->setCurrentIndex(0);
-//        static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
+        //        static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
         QString str = QString::fromUtf8(buf,len);
         str.fromLatin1(buf,len);
-//        double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
+        //        double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
         //            ui->textBrowser_recvText->append(str);
         //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
         //        chartPicSize->addData(++currentIndex,loss);
         workerUdpReceiveObj->clearFrameRcvCount();
         videowriter.release();
-        label_video->setPixmap(QPixmap(defaultCarPicPath));
+        label_videoReceived->setPixmap(QPixmap(defaultCarPicPath));
 
         break;
     }
@@ -160,8 +162,9 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len)
             //            ui->label_video->setPixmap(pixmap);
             //            QImage img((uchar*)buf,ui->widget_RecvVideo->width(),ui->widget_RecvVideo->height(),QImage::Format_Indexed8);
             //            ui->widget_RecvVideo->displayImage(img);
-            label_video->setPixmap(pixmap);
+            label_videoReceived->setPixmap(pixmap);
         }
+        receiver_quality->showCurrentVideoQuality((VideoQualityType)quality);
 
         break;
     }
@@ -180,34 +183,34 @@ void MainWindow::slotTcpRecv(int msgtype, char *buf, int len)
 
     switch (msgtype)
     {
-        case (int)MsgType::TextType:
-        {
+    case (int)MsgType::TextType:
+    {
 
-            //            ui->tabWidget->setCurrentIndex(0);
-//            static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
-            QString str = QString::fromUtf8(buf,len);
-            str.fromLatin1(buf,len);
-//            double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
-            //            ui->textBrowser_recvText->append(str);
-            //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
-            //        chartPicSize->addData(++currentIndex,loss);
-            workerUdpReceiveObj->clearFrameRcvCount();
-            videowriter.release();
-            label_video->setPixmap(QPixmap(defaultCarPicPath));
+        //            ui->tabWidget->setCurrentIndex(0);
+        //            static quint8 currentIndex = 0;//记录当前是第几次算frame丢包率
+        QString str = QString::fromUtf8(buf,len);
+        str.fromLatin1(buf,len);
+        //            double loss = (1-str.toDouble()/workerUdpReceiveObj->getFrameRcvCount())*100;
+        //            ui->textBrowser_recvText->append(str);
+        //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
+        //        chartPicSize->addData(++currentIndex,loss);
+        workerUdpReceiveObj->clearFrameRcvCount();
+        videowriter.release();
+        label_videoReceived->setPixmap(QPixmap(defaultCarPicPath));
 
-            break;
-        }
+        break;
+    }
 
-        case (int)MsgType::VideoType:
-        {
-            QPixmap pixmap;
+    case (int)MsgType::VideoType:
+    {
+        QPixmap pixmap;
 
-            pixmap.loadFromData((uchar*)buf, len, "JPG");
+        pixmap.loadFromData((uchar*)buf, len, "JPG");
 
-            label_video->setPixmap(pixmap);
+        label_videoReceived->setPixmap(pixmap);
 
-            break;
-        }
+        break;
+    }
     }
     //    qint64 delay;
 
@@ -263,8 +266,8 @@ void MainWindow::slotGetVideo()
 
 
     QPixmap pixmap = QPixmap::fromImage(MatToQImage(mat));
-    pixmap = pixmap.scaled(label_videoMy->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
-    label_videoMy->setPixmap(pixmap);
+    pixmap = pixmap.scaled(label_videoRealTimeSight->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
+    label_videoRealTimeSight->setPixmap(pixmap);
 
     pixmap.save("temp.jpg","JPG");
     //压缩图片质量
@@ -272,10 +275,10 @@ void MainWindow::slotGetVideo()
 
     if(ui->checkBox_Use4G->isChecked()){
         emit signal_tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
-//        workerTcpObj->tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
-//        qDebug()<<__FUNCTION__;
+        //        workerTcpObj->tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
+        //        qDebug()<<__FUNCTION__;
     }else{
-        emit signal_udpSendImage("temp.jpg",MsgType::VideoType,"JPG");
+        emit signal_udpSendImage("temp.jpg",MsgType::VideoType,"JPG",(int)sender_quality->getCurrentVideoQuality());
     }
 
 
@@ -296,8 +299,8 @@ void MainWindow::slotStartSightShare()
         isSuccess = capture.open(VIDEOSOURCE.toInt());
         qDebug()<<isSuccess<<VIDEOSOURCE.toInt();
     }else if(deviceType == VideoDeviceType::File){
-//        isSuccess = capture.open(VIDEOSOURCE.toStdString());
-//        VIDEOSOURCE = ".\\videoSource\\test.avi";
+        //        isSuccess = capture.open(VIDEOSOURCE.toStdString());
+        //        VIDEOSOURCE = ".\\videoSource\\test.avi";
         isSuccess = capture.open(VIDEOSOURCE.toStdString());
         qDebug()<<isSuccess<<VIDEOSOURCE<<VIDEOSOURCE2;
     }
@@ -321,7 +324,7 @@ void MainWindow::slotStartSightShare()
     timer_get_video->start(1000/videoFrameRate);//1s采集10张图片
     connect(timer_get_video,&QTimer::timeout,this,&MainWindow::slotGetVideo);
     //将发送出去的视频保存下来
-//    QString date = (QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+    //    QString date = (QDateTime::currentDateTime().toString("yyyy-MM-dd"));
     QString datetime = (QDateTime::currentDateTime().toString("yyyy-MM-dd hh.mm.ss"));
     QString fileName = tr("./videoSource/%1.avi").arg(datetime);
     if(ui->checkBoxStroeSightShare->isChecked()){
@@ -359,17 +362,17 @@ void MainWindow::slotStartSightShare()
  */
 void MainWindow::slotStopSightShare()
 {
-//    ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
+    //    ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
 
     //发送给对方默认的封面 统计时延时不需要，应用时可以用上
-//    emit signal_tcpSendImage(defaultCarPicPath,MsgType::VideoType,"JPG");
+    //    emit signal_tcpSendImage(defaultCarPicPath,MsgType::VideoType,"JPG");
 
     if(capture.isOpened()){
         capture.release();
 
         timer_get_video->deleteLater();
 
-        label_videoMy->setPixmap(QPixmap(defaultCarPicPath));
+        label_videoRealTimeSight->setPixmap(QPixmap(defaultCarPicPath));
         //        workerUdpSendObj->udpSendImage(defaultCarPicPath,MsgType::VideoType,"JPG");
 
         if(ui->checkBox_Use4G->isChecked()){
@@ -469,39 +472,38 @@ void MainWindow::InitSettintMenu()
 void MainWindow::InitRealTimeForm()
 {
 
-
     QNavigationWidget *realtimeSetting = ui->widgetRealTimeVideo->getMenuWidget();
 
     realtimeSetting->addItem("渝A XXXXX");
     realtimeSetting->addItem("都不看");
 
 
-    label_video = new qVideoLable;
-    label_video->setScaledContents(true);
-    label_video->setPixmap(QPixmap(defaultCarPicPath));
+    label_videoReceived = new qVideoLable;
+    label_videoReceived->setScaledContents(true);
+    label_videoReceived->setPixmap(QPixmap(defaultCarPicPath));
 
-    connect(label_video,&qVideoLable::signalLableClicked,[=]{
+    connect(label_videoReceived,&qVideoLable::signalLableClicked,[=]{
         qDebug()<<"单击";
 
     });
-    connect(label_video,&qVideoLable::signalLableDoubleClicked,[=]{
-        qDebug()<<"双击" << label_video->windowFlags();
-        static QFlags<Qt::WindowType> flags = label_video->windowFlags();
+    connect(label_videoReceived,&qVideoLable::signalLableDoubleClicked,[=]{
+        qDebug()<<"双击" << label_videoReceived->windowFlags();
+        static QFlags<Qt::WindowType> flags = label_videoReceived->windowFlags();
 
 
-        if(label_video->isFullScreen()){
-            label_video->setWindowFlags(flags);
-            label_video->showNormal();
+        if(label_videoReceived->isFullScreen()){
+            label_videoReceived->setWindowFlags(flags);
+            label_videoReceived->showNormal();
         }else{
-            label_video->setWindowFlags(Qt::Dialog);
-            label_video->showFullScreen();
+            label_videoReceived->setWindowFlags(Qt::Dialog);
+            label_videoReceived->showFullScreen();
         }
     });
 
-    ui->widgetRealTimeVideo->addContentWidget(label_video);
+    ui->widgetRealTimeVideo->addContentWidget(label_videoReceived);
     ui->widgetRealTimeVideo->setMaxListFrameWidthRatio(0.2);
 
-    labelVideoFrom = new QLabel(label_video);
+    labelVideoFrom = new QLabel(label_videoReceived);
     labelVideoFrom->move(20,20);
     labelVideoFrom->setStyleSheet("color: rgb(255, 0, 0);background:transparent;font:12pt bold \"Times New Roman\";");
 
@@ -520,6 +522,22 @@ void MainWindow::InitRealTimeForm()
 
     realtimeSetting->setCurrentIndex(1);
 
+    //在下方添加 “接口选择”、“视频质量选择”的下拉框
+
+    receiver_interface = new ComboxLabel("DSRC",label_videoReceived);
+    receiver_interface->move(label_videoReceived->width()*0.85,label_videoReceived->height()*0.75);
+    receiver_interface->setStyleSheet("color: rgb(255, 0, 255);background:transparent;font:12pt bold \"Times New Roman\";");
+    receiver_interface->addComboboxText("DSRC");
+    receiver_interface->addComboboxText("4G");
+
+    receiver_quality = new ComboxLabel("1080P",label_videoReceived);
+    receiver_quality->move(label_videoReceived->width()*0.85+100,label_videoReceived->height()*0.75);
+    receiver_quality->setStyleSheet("color: rgb(255, 0, 255);background:transparent;font:12pt bold \"Times New Roman\";");
+
+    receiver_quality->addComboboxText("1080P");
+    receiver_quality->addComboboxText("超清");
+    receiver_quality->addComboboxText("高清");
+    receiver_quality->addComboboxText("标清");
 
 
 }
@@ -536,30 +554,30 @@ void MainWindow::InitSightShareForm()
 
     sightShareWidget->setCurrentIndex(1);
 
-    label_videoMy = new qVideoLable;
-    label_videoMy->setScaledContents(true);
-    label_videoMy->setPixmap(QPixmap(defaultCarPicPath));
+    label_videoRealTimeSight = new qVideoLable;
+    label_videoRealTimeSight->setScaledContents(true);
+    label_videoRealTimeSight->setPixmap(QPixmap(defaultCarPicPath));
 
-    connect(label_videoMy,&qVideoLable::signalLableClicked,[=]{
+    connect(label_videoRealTimeSight,&qVideoLable::signalLableClicked,[=]{
         qDebug()<<"单击";
 
     });
-    connect(label_videoMy,&qVideoLable::signalLableDoubleClicked,[=]{
-        qDebug()<<"双击" << label_videoMy->windowFlags();
-        static QFlags<Qt::WindowType> flags = label_videoMy->windowFlags();
+    connect(label_videoRealTimeSight,&qVideoLable::signalLableDoubleClicked,[=]{
+        qDebug()<<"双击" << label_videoRealTimeSight->windowFlags();
+        static QFlags<Qt::WindowType> flags = label_videoRealTimeSight->windowFlags();
 
-        if(label_videoMy->isFullScreen()){
-            label_videoMy->setWindowFlags(flags);
-            label_videoMy->showNormal();
+        if(label_videoRealTimeSight->isFullScreen()){
+            label_videoRealTimeSight->setWindowFlags(flags);
+            label_videoRealTimeSight->showNormal();
         }else{
-            label_videoMy->setWindowFlags(Qt::Dialog);
-            label_videoMy->showFullScreen();
+            label_videoRealTimeSight->setWindowFlags(Qt::Dialog);
+            label_videoRealTimeSight->showFullScreen();
         }
     });
 
-    ui->widgetSightShare->addContentWidget(label_videoMy);
+    ui->widgetSightShare->addContentWidget(label_videoRealTimeSight);
 
-    label_sightShare = new QLabel(label_videoMy);
+    label_sightShare = new QLabel(label_videoRealTimeSight);
     label_sightShare->move(20,20);
     //    lable_sightShare->setText("60秒后结束共享");
     label_sightShare->setStyleSheet("color: rgb(255, 0, 0);background:transparent;font:12pt bold \"Times New Roman\";");
@@ -587,6 +605,26 @@ void MainWindow::InitSightShareForm()
 
 
     ui->widgetSightShare->setMaxListFrameWidthRatio(0.2);
+
+
+    //在下方添加 “接口选择”、“视频质量选择”的下拉框
+
+    sender_interface = new ComboxLabel("DSRC",label_videoRealTimeSight);
+    sender_interface->move(label_videoRealTimeSight->width()*0.85,label_videoRealTimeSight->height()*0.75);
+    sender_interface->setStyleSheet("color: rgb(255, 0, 255);background:transparent;font:12pt bold \"Times New Roman\";");
+    sender_interface->addComboboxText("DSRC");
+    sender_interface->addComboboxText("4G");
+
+    sender_quality = new ComboxLabel("1080P",label_videoRealTimeSight);
+    sender_quality->move(label_videoRealTimeSight->width()*0.85+100,label_videoRealTimeSight->height()*0.75);
+    sender_quality->setStyleSheet("color: rgb(255, 0, 255);background:transparent;font:12pt bold \"Times New Roman\";");
+
+    sender_quality->addComboboxText("1080P");
+    sender_quality->addComboboxText("超清");
+    sender_quality->addComboboxText("高清");
+    sender_quality->addComboboxText("标清");
+
+    qDebug()<<"label_videoRealTimeSight width:"<<label_videoRealTimeSight->width()<<label_videoRealTimeSight->height();
 
 
 
@@ -736,10 +774,6 @@ void MainWindow::SyncTimeStamp()
 
 }
 
-void MainWindow::getNtpTime(QString ip, int port)
-{
-
-}
 
 
 /**

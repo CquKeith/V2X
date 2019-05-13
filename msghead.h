@@ -33,21 +33,34 @@ enum MsgType{
     ImageType,
     VideoType
 };
+enum InterfaceType{
+    DSRC,
+    LTE
+};
+enum VideoQualityType{
+    _1080P,
+    _720P,
+    _480P,
+    _360P
+};
 
 typedef struct  {
     MsgType msgType;                        //!消息类型
+//    InterfaceType interfaceType;            //!使用4G还是DSRC的接口
+    VideoQualityType video_quality_type;    //!视频的质量
+
     unsigned int uTransFrameHdrSize;    //!sizeof(WIFI_FRAME_HEADER)
     unsigned int uTransFrameSize;       //!sizeof(WIFI_FRAME_HEADER) + Data Size
 
     //数据帧变量
-    unsigned int uDataFrameSize;        //数据帧的总大小
-    unsigned int uDataFrameTotal;       //一帧数据被分成传输帧的个数
-    unsigned int uDataFrameCurr;        //数据帧当前的帧号
-    unsigned int uDataInFrameOffset;    //数据帧在整帧的偏移
+    unsigned int uDataFrameSize;        //!数据帧的总大小
+    unsigned int uDataFrameTotal;       //!一帧数据被分成传输帧的个数
+    unsigned int uDataFrameCurr;        //!数据帧当前的帧号
+    unsigned int uDataInFrameOffset;    //!数据帧在整帧的偏移
 //    char imageFormat[4]={0};
-    unsigned int uPicnum;               //当前发送的是第几张图片
-    long long  uSendDatatime;          //数据帧发送时间戳
-    long long  uRecDatatime;           //数据帧接收时间戳
+    unsigned int uPicnum;               //!当前发送的是第几张图片
+    long long  uSendDatatime;          //!数据帧发送时间戳
+    long long  uRecDatatime;           //!数据帧接收时间戳
 //    double picSize;                    //如果是发送的视频或者图片，这里标记图片文件的大小
 }PackageHead;
 

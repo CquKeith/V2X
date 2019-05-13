@@ -78,7 +78,7 @@ void WorkerUdpSendObject::udpSendText(QString messge)
  * 根据文件目录 发送一张图片
  * 类型可以是单纯的图片或者是视频（意味着后面还有很多图片）
 */
-void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString imageFormat)
+void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString imageFormat,int video_quality)
 {
     //这里将目标地址和端口号 声明在当前函数，保证发送数据时 目标地址和端口号是在同一个线程中
     QHostAddress desIP;
@@ -124,6 +124,10 @@ void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString ima
 
         PackageHead mes;
         mes.msgType = (MsgType)msgtype;
+
+//        mes.interfaceType = InterfaceType::DSRC;
+        mes.video_quality_type = (VideoQualityType)video_quality;
+
         mes.uTransFrameHdrSize = sizeof(PackageHead);
         if ((count+1) != num) {
             mes.uTransFrameSize = packageContentSize;

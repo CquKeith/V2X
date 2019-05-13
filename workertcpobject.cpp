@@ -68,7 +68,10 @@ void WorkerTcpObject::slotStartTcp()
 
     m_sendBuf = new char[MAX_ONE_FRAME_SIZE];
 }
-
+/**
+ * @brief WorkerTcpObject::readTcpInfo
+ * 弃用
+ */
 void WorkerTcpObject::readTcpInfo()
 {
     while(tcpSocket->bytesAvailable()){
@@ -138,6 +141,7 @@ void WorkerTcpObject::readTcpInfo()
 /**
  * @brief WorkerTcpObject::readTcpInfoDealBug
  * 解决粘包的问题
+ * 弃用
  */
 void WorkerTcpObject::readTcpInfoByMultipleFrames()
 {
@@ -286,6 +290,10 @@ void WorkerTcpObject::readTcpInfoOneTime()
 
         in >> imageNumberCurr;
         in >> startTimestemp;
+
+
+
+
 
         in >> message;//一幅图像所有像素的完整字节流
 
@@ -437,6 +445,9 @@ void WorkerTcpObject::sendOneImageOneTime(QString filepath, int msgtype, QString
     out << (quint64)0;	//写入套接字图像数据的大小
     out << (quint64)0;	//写入套接字 当前是第几张图片
     out << (quint64)0;	//写入套接字 当前时间戳
+
+    out << (quint64)0;	//写入套接字 当前使用的接口
+
     out << byte;			//写入套接字的经压缩-编码后的图像数据
 
     out.device()->seek(0);
@@ -444,6 +455,9 @@ void WorkerTcpObject::sendOneImageOneTime(QString filepath, int msgtype, QString
 
     out << picnum;
     out << QDateTime::currentMSecsSinceEpoch();
+
+    out << InterfaceType::LTE;
+
     tcpSocket->write(ba);	//将整块数据写入套接字
 
 }

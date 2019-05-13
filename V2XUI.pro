@@ -30,12 +30,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 include(./myNavigationWidget/myNavigationWidget.pri)
-include(./myCVDisplayWidget/myCVDisplayWidget.pri)
+#include(./myCVDisplayWidget/myCVDisplayWidget.pri)
 include(./mySpliterWidget/mySpliterWidget.pri)
 include(./myToastWidget/myToastWidget.pri)
 include(./qcustomplot/qcustomplot.pri)
 include(./myVideoLable/qVideoLable.pri)
-include (qntp/qntp.pri)
+include(./myComboxLabel/myComboxLabel.pri)
+#include (qntp/qntp.pri)
 
 SOURCES += \
         main.cpp \

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>选择视频来源</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

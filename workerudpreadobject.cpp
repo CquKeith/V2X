@@ -111,7 +111,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
 //                emit signal_ImageReceiveProcess((int)mes->uDataFrameCurr*100/mes->uDataFrameTotal,mes->uDataFrameCurr,mes->uDataFrameTotal);
                 if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
 //                    qDebug()<<"received an image,then emit signal to GUI Thread";
-                    emit sigRecvOk((int)mes->msgType,m_buf, mes->uDataFrameSize);
+                    emit sigRecvOk((int)mes->msgType,m_buf, mes->uDataFrameSize,(int)mes->video_quality_type);
                     emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
                     memCacheMap[key].isVisited = true;
                 }

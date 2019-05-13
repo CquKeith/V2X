@@ -33,7 +33,7 @@ public:
 
 signals:
     void signalUdpSocketStartListion();
-    void sigRecvOk(int msgtype, char *buf, int len);
+    void sigRecvOk(int msgtype, char *buf, int len,int quality);
     //frameSize : KB
     void signalSinglePicDelayAndFrameSize(uint num,qint64 delaytime,double frameSize);
     void signalSingleFrameDelay(uint num,qint64 delaytime);

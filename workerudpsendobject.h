@@ -46,7 +46,7 @@ signals:
     void signalWorkerUdpSenderMsgDialog(int,QString);
 public slots:
     void udpSendText(QString messge);
-    void udpSendImage(QString filepath, int msgtype, QString imageFormat);
+    void udpSendImage(QString filepath, int msgtype, QString imageFormat, int video_quality=VideoQualityType::_1080P);
 private:
     QThread *workthread;
 
