@@ -18,7 +18,7 @@ class WorkerUdpReadObject : public QObject
     Q_OBJECT
 public:
     explicit WorkerUdpReadObject(QObject *parent = nullptr,QString localIP="192.168.1.83",quint16 localPort=4040);
-    ~WorkerUdpReadObject();
+    virtual ~WorkerUdpReadObject();
 
     QString getHostIP() const;
     void setHostIP(const QString &value);

@@ -42,7 +42,7 @@ void WorkerUdpSendObject::udpSendText(QString messge)
     //代码段离开时会执行~QMutexLocker，从而unlock信号量
     {
 //        QMutex mutex;
-        QMutexLocker locker(&mutex_hostIPandPort);
+//        QMutexLocker locker(&mutex_hostIPandPort);
 //         qDebug()<<locker.mutex();
         desIP.setAddress(hostIP);
         desPort = hostPort;
@@ -87,7 +87,7 @@ void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString ima
     //代码段离开时会执行~QMutexLocker，从而unlock信号量
     {
 //        QMutex mutex;
-        QMutexLocker locker(&mutex_hostIPandPort);
+//        QMutexLocker locker(&mutex_hostIPandPort);
 //        qDebug()<<locker.mutex();
         desIP.setAddress(hostIP);
         desPort = hostPort;
@@ -181,7 +181,7 @@ quint16 WorkerUdpSendObject::getHostPort() const
 void WorkerUdpSendObject::setHostPort(const quint16 &value)
 {
 //    QMutex mutex;
-    QMutexLocker locker(&mutex_hostIPandPort);
+//    QMutexLocker locker(&mutex_hostIPandPort);
 //    qDebug()<<locker.mutex();
     hostPort = value;
 //    emit signalWorkerUdpSenderMsgDialog(WrokerObjectrMsgTypeToDlg::Information,tr("设置接收方端口号 %1 成功").arg(value));
@@ -209,7 +209,7 @@ QString WorkerUdpSendObject::getHostIP() const
 bool WorkerUdpSendObject::setHostIP(const QString &value)
 {
 //    QMutex mutex;
-    QMutexLocker locker(&mutex_hostIPandPort);
+//    QMutexLocker locker(&mutex_hostIPandPort);
 //    qDebug()<<locker.mutex();
 //    hostIP = value;
     //检测该主机是否能够ping通

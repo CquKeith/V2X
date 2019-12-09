@@ -10,10 +10,10 @@
 #define MAX_ONE_FRAME_SIZE 1300
 
 //最多可以同时缓冲多少张图片
-#define MEM_CACHE_MAX_SIZE 100
+#define MEM_CACHE_MAX_SIZE 1000
 
-static QMutex mutex_hostIPandPort;
-static QMutex mutex_mBuffer;
+//static QMutex mutex_hostIPandPort;
+//static QMutex mutex_mBuffer;
 
 /*内存缓冲的结构体*/
 typedef struct memCacheStructure
@@ -22,7 +22,6 @@ typedef struct memCacheStructure
     quint16 picNum;     //这是存的哪张图片的内容
     bool isVisited;     //如果 为true，说明此段内存空间可以被使用
     char* memStart;   //内存的起始地址
-
 }s_memCache;
 
 /*Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构体*/

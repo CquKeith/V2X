@@ -24,7 +24,7 @@ class WorkerUdpSendObject : public QObject
     Q_OBJECT
 public:
     explicit WorkerUdpSendObject(QObject *parent = nullptr);
-    ~WorkerUdpSendObject();
+    virtual ~WorkerUdpSendObject();
 
     QString getHostIP() const;
     bool setHostIP(const QString &value);

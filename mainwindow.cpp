@@ -37,15 +37,17 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug()<<__FUNCTION__<<QThread::currentThreadId();
 
     VIDEOSOURCE = "./videoSource/2018-11-24 10.18.51.avi";
-    deviceType=VideoDeviceType::File;
+    deviceType=VideoDeviceType::Camera;
 
     //    QTimer::singleShot(10,[=]{ui->widgetRealTimeVideo->refreshForm();ui->widgetSightShare->refreshForm();});
 //    qRegisterMetaType<VideoQualityType>("VideoQualityType");
 
+    QTimer::singleShot(10,Qt::VeryCoarseTimer,this,&MainWindow::loadSettings);
 }
 
 MainWindow::~MainWindow()
 {
+    saveSettings();
     workerUdpReceiveObj->deleteLater();
     workerUdpSendObj->deleteLater();
     workerTcpObj->deleteLater();
@@ -228,10 +230,16 @@ void MainWindow::slotTcpRecv(int msgtype, char *buf, int len)
  */
 void MainWindow::slotPlotSinglePicDelayAndFrameSize(uint num, qint64 delaytime,double frameSize)
 {
-    chartPic->addData(num,delaytime);
+    QObject * obj = sender();
+    if(obj->inherits("WorkerTcpObject")){
+        chartPicTcp->addData(num,delaytime);
+        chartPicSizeTcp->addData(num,frameSize);
+    }else if(obj->inherits("WorkerUdpReadObject")){
+        chartPicUdp->addData(num,delaytime);
 
+        chartPicSizeUdp->addData(num,frameSize);
+    }
 
-    chartPicSize->addData(num,frameSize);
 }
 /**
  * @brief MainWindow::slotPlotSingleFrameDelay
@@ -273,11 +281,10 @@ void MainWindow::slotGetVideo()
     //压缩图片质量
 
 
-    if(ui->checkBox_Use4G->isChecked()){
+    if(ui->checkBox_UseLTE->isChecked()){
         emit signal_tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
-        //        workerTcpObj->tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
-        //        qDebug()<<__FUNCTION__;
-    }else{
+    }
+    if(ui->checkBox_UseDSRC->isChecked()){
         emit signal_udpSendImage("temp.jpg",MsgType::VideoType,"JPG",(int)sender_quality->getCurrentVideoQuality());
     }
 
@@ -375,11 +382,11 @@ void MainWindow::slotStopSightShare()
         label_videoRealTimeSight->setPixmap(QPixmap(defaultCarPicPath));
         //        workerUdpSendObj->udpSendImage(defaultCarPicPath,MsgType::VideoType,"JPG");
 
-        if(ui->checkBox_Use4G->isChecked()){
+        if(ui->checkBox_UseLTE->isChecked()){
             ToastString(tr("发送完毕，共发送 %1 张图片").arg(workerTcpObj->getPicnum()),Toast::TimeLenth::LONG);
             qDebug()<<tr("发送完毕，共发送 %1 张图片").arg(workerTcpObj->getPicnum());
             workerTcpObj->clearPicNum();
-        }else{
+        }if(ui->checkBox_UseDSRC->isChecked()){
             workerUdpSendObj->udpSendText(QString::number(workerUdpSendObj->getFrameNum()));
 
             ToastString(tr("发送完毕，共发送 %1 张图片，%2帧数据").arg(workerUdpSendObj->getPicnum()).arg(workerUdpSendObj->getFrameNum()),Toast::TimeLenth::LONG);
@@ -636,41 +643,135 @@ void MainWindow::InitSightShareForm()
 void MainWindow::InitAnalyseForm()
 {
     QNavigationWidget *analyseWidgetMenu = ui->widget_analyseMenu;
-    analyseWidgetMenu->addItem("单张图片delay");
-    analyseWidgetMenu->addItem("单张图片size");
+    analyseWidgetMenu->addItem("DSRC单张图片delay");
+    analyseWidgetMenu->addItem("DSRC单张图片size");
+    analyseWidgetMenu->addItem("LTE单张图片delay");
+    analyseWidgetMenu->addItem("LTE单张图片size");
     connect(analyseWidgetMenu,&QNavigationWidget::currentItemChanged,[=](const int &index){
         ui->stackedWidgetAnalyse->setCurrentIndex(index);
     });
 
-    chartPic = new QCustomChart(ui->pageAnalyseEachPicture);
-    ui->pageAnalyseEachPicture->layout()->addWidget(chartPic);
-    connect(chartPic,&QCustomChart::signalQCustomToGUI,[=](QString msg){
+    chartPicUdp = new QCustomChart(ui->pageAnalyseDSRCDelay);
+    QGridLayout* pageAnalyseDSRCDelayGL = new QGridLayout(ui->pageAnalyseDSRCDelay);
+    ui->pageAnalyseDSRCDelay->setLayout(pageAnalyseDSRCDelayGL);
+    ui->pageAnalyseDSRCDelay->layout()->addWidget(chartPicUdp);
+    connect(chartPicUdp,&QCustomChart::signalQCustomToGUI,[=](QString msg){
         QMessageBox::information(this,tr("tips"),msg);
     });
 
-    chartPicSize = new QCustomChart(ui->pageAnalyseEachFrame);
-    ui->pageAnalyseEachFrame->layout()->addWidget(chartPicSize);
-    connect(chartPicSize,&QCustomChart::signalQCustomToGUI,[=](QString msg){
+    chartPicSizeUdp = new QCustomChart(ui->pageAnalyseDSRCSize);
+    QGridLayout* pageAnalyseDSRCSizeGL = new QGridLayout(ui->pageAnalyseDSRCSize);
+    ui->pageAnalyseDSRCSize->setLayout(pageAnalyseDSRCSizeGL);
+    ui->pageAnalyseDSRCSize->layout()->addWidget(chartPicSizeUdp);
+    connect(chartPicSizeUdp,&QCustomChart::signalQCustomToGUI,[=](QString msg){
         QMessageBox::information(this,tr("tips"),msg);
     });
 
-    chartPic->setTitle("单张图片分析");
-    chartPicSize->setTitle("单帧图片大小");
-    chartPic->setXaxisLabel("序号");
-    chartPic->setYaxisLabel("时延(ms)");
-    chartPicSize->setXaxisLabel("序号");
-    chartPicSize->setYaxisLabel("大小(KB)");
+    chartPicUdp->setTitle("DSRC Delay");
+    chartPicSizeUdp->setTitle("DSRC size");
+    chartPicUdp->setXaxisLabel("序号");
+    chartPicUdp->setYaxisLabel("时延(ms)");
+    chartPicSizeUdp->setXaxisLabel("序号");
+    chartPicSizeUdp->setYaxisLabel("大小(KB)");
 
-    //产生随机的测试数据
-    //    qsrand(QDateTime::currentDateTime().toMSecsSinceEpoch());
-    //    int x = -300;
-    //    while(x<300){
+    chartPicTcp = new QCustomChart(ui->pageAnalyseLTEDelay);
+    QGridLayout* glLTEDelay = new QGridLayout(ui->pageAnalyseLTEDelay);
+    ui->pageAnalyseLTEDelay->setLayout(glLTEDelay);
+    ui->pageAnalyseLTEDelay->layout()->addWidget(chartPicTcp);
+    connect(chartPicTcp,&QCustomChart::signalQCustomToGUI,[=](QString msg){
+        QMessageBox::information(this,tr("tips"),msg);
+    });
 
-    //        chartPic->addData(x,qrand()%300-100);
-    //        chartFrame->addData(x,qrand()%300-100);
-    //        x += qMin(qrand()%30+5,300);
-    //    }
+    chartPicSizeTcp = new QCustomChart(ui->pageAnalyseLTESize);
+    QGridLayout* glLTESize = new QGridLayout(ui->pageAnalyseLTESize);
+    ui->pageAnalyseLTESize->setLayout(glLTESize);
+    ui->pageAnalyseLTESize->layout()->addWidget(chartPicSizeTcp);
+    connect(chartPicSizeTcp,&QCustomChart::signalQCustomToGUI,[=](QString msg){
+        QMessageBox::information(this,tr("tips"),msg);
+    });
 
+    chartPicTcp->setTitle("Tcp delay");
+    chartPicSizeTcp->setTitle("Tcp Size");
+    chartPicTcp->setXaxisLabel("序号");
+    chartPicTcp->setYaxisLabel("时延(ms)");
+
+    chartPicSizeTcp->setXaxisLabel("序号");
+    chartPicSizeTcp->setYaxisLabel("大小(KB)");
+
+}
+/**
+ * @brief MainWindow::saveSettings
+ * 保存设置
+ */
+void MainWindow::saveSettings()
+{
+    QSettings setting("config.ini",QSettings::IniFormat);
+
+    /*本机端口号*/
+    setting.setValue("local/port",ui->lineEdit_localPort->text());
+    /*视频帧率*/
+    setting.setValue("local/FPS",ui->lineEdit_videoFPS->text());
+
+    /*对方IP地址和端口号*/
+    setting.beginGroup("otherSize");
+    setting.setValue("port",ui->lineEdit_otherPort->text());
+
+    setting.setValue("radioButtonDSRCSetting",ui->rbDSRCSetting->isChecked());
+    setting.setValue("radioButtonLTESetting",ui->rbLTESetting->isChecked());
+
+    setting.setValue("checkBoxDSRCSetting",ui->checkBox_UseDSRC->isChecked());
+    setting.setValue("checkBoxLTESetting",ui->checkBox_UseLTE->isChecked());
+
+    setting.beginWriteArray("IP");
+    int count = ui->comboBoxOtherIP->count();
+    int currentIndex = ui->comboBoxOtherIP->currentIndex();
+    setting.setValue("currentIndex",currentIndex);
+    for(int i=0;i<count;i++)
+    {
+        setting.setArrayIndex(i);
+        setting.setValue("ip",ui->comboBoxOtherIP->itemText(i));
+    }
+    setting.endArray();
+
+    setting.endGroup();
+}
+/**
+ * @brief MainWindow::loadSettings
+ * 加载设置
+ */
+void MainWindow::loadSettings()
+{
+    QSettings setting("config.ini",QSettings::IniFormat);
+
+    /*本机端口号*/
+    ui->lineEdit_localPort->setText(setting.value("local/port").toString());
+    /*视频帧率*/
+    ui->lineEdit_videoFPS->setText(setting.value("local/FPS").toString());
+
+    /*对方IP地址和端口号*/
+    setting.beginGroup("otherSize");
+    ui->lineEdit_otherPort->setText(setting.value("port").toString());
+
+    ui->rbDSRCSetting->setChecked(setting.value("radioButtonDSRCSetting").toBool());
+    ui->rbLTESetting->setChecked(setting.value("radioButtonLTESetting").toBool());
+
+    ui->checkBox_UseDSRC->setChecked(setting.value("checkBoxDSRCSetting").toBool());
+    ui->checkBox_UseLTE->setChecked(setting.value("checkBoxLTESetting").toBool());
+
+    int arraySize = setting.beginReadArray("IP");
+    for(int i=0;i<arraySize;i++)
+    {
+        setting.setArrayIndex(i);
+        ui->comboBoxOtherIP->addItem(setting.value("ip").toString());
+    }
+    int currentIndex = setting.value("currentIndex").toInt();
+    if(currentIndex >= 0){
+        ui->comboBoxOtherIP->setCurrentIndex(currentIndex);
+    }
+
+    setting.endArray();
+
+    setting.endGroup();
 
 }
 /**
@@ -774,6 +875,12 @@ void MainWindow::SyncTimeStamp()
 
 }
 
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    saveSettings();
+    e->accept();
+}
+
 
 
 /**
@@ -797,10 +904,10 @@ void MainWindow::on_pb_getLocalIP_clicked()
  */
 void MainWindow::on_pb_bindLocal_clicked()
 {
-    if(ui->checkBox_Use4G->isChecked()){
-        ToastString("使用TCP无需设置此选项");
-        return;
-    }
+//    if(ui->rbDSRCSetting->isChecked()){
+//        ToastString("使用TCP无需设置此选项");
+//        return;
+//    }
 
     QString ip = ui->comboBoxLocalIP->currentText();
     if(ip.isEmpty()){
@@ -924,11 +1031,12 @@ void MainWindow::on_pb_setOtherSocket_clicked()
     //    workerUdpSendObj->setHostPort(ui->lineEdit_otherPort->text().toInt());
     QString ip = ui->comboBoxOtherIP->currentText();
     int port = ui->lineEdit_otherPort->text().toInt();
-    if(!ui->checkBox_Use4G->isChecked()){
+    if(ui->rbDSRCSetting->isChecked()){
         workerUdpSendObj->setHostIpPort(ip,port);
-    }else{//通过4G 向服务器握手
-        emit signal_ConnectToServer(ip,port,ui->lineEdit_id->text());
-        workerTcpObj->setWaitForReadyTime(ui->lineEdit_waitReadyreadtime->text().toInt());
+    }
+    //当前设置4G
+    else if(ui->rbLTESetting->isChecked()){
+        emit signal_ConnectToServer(ip,port);
 
     }
 }

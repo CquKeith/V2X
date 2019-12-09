@@ -51,6 +51,7 @@
 //#define VIDEOSOURCE "./videoSource/2018-11-24 10.47.43.avi"
 //#define VIDEOSOURCE 0
 
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
@@ -65,7 +66,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    virtual ~MainWindow();
 
 //    __inline quint64 getPic_num_hasSended() const;
 //    __inline void clearPicNum(){pic_num_hasSended = 0;}
@@ -79,7 +80,7 @@ signals:
 
     void signal_tcpSendText(QString);
     void signal_tcpSendImage(QString,int,QString);
-    void signal_ConnectToServer(QString,int,QString id);
+    void signal_ConnectToServer(QString,int);
 
     void signal_SetCanRecevInfo(bool can);
 
@@ -103,6 +104,8 @@ private slots:
 
     void on_pb_setOtherSocket_clicked();
 
+    void loadSettings();
+
 private:
     Ui::MainWindow *ui;
     QPoint mousePoint;  //鼠标拖动自定义标题栏时的坐标
@@ -117,6 +120,10 @@ private:
     void InitRealTimeForm();//初始化 接收 实时视频显示的界面
     void InitSightShareForm();//初始化 分享 实时视频显示的界面
     void InitAnalyseForm(); //初始化 图像分析的界面
+
+    /* 保存和加载设置 */
+    void saveSettings();
+//    void loadSettings();
 
     inline void ToastString(QString msg="", Toast::TimeLenth time_lenth=Toast::TimeLenth::SHORT);//toast
 
@@ -148,7 +155,7 @@ private:
     QString defaultCarPicPath;
 
     // 图像分析
-    QCustomChart *chartPic,*chartPicSize;
+    QCustomChart *chartPicUdp,*chartPicSizeUdp,*chartPicTcp,*chartPicSizeTcp;
 //    quint64 pic_num_hasSended;
 
     //系统时间显示
@@ -161,7 +168,8 @@ private:
 
     /*显示当前使用的网络接口和视频是质量*/
     ComboxLabel *sender_interface,*sender_quality,*receiver_interface,*receiver_quality;
-
+protected:
+    void closeEvent(QCloseEvent *e);
 };
 
 #endif // MAINWINDOW_H

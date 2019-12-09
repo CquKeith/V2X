@@ -21,11 +21,12 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 WorkerTcpObject::~WorkerTcpObject()
 {
     //    delete recvBuf;
+    workthread->quit();
     delete m_sendBuf;
 
 }
 
-void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port,const QString & id)
+void WorkerTcpObject::slotConnectToServer(const QString &ip, const quint16 &port)
 {
     tcpSocket->disconnectFromHost();
     //    tcpSocket->waitForDisconnected(3000);
@@ -49,14 +50,6 @@ void WorkerTcpObject::slotStartTcp()
     connect(tcpSocket,&QTcpSocket::connected,[=]{
         qDebug()<<"连接上服务器";
         emit signalWorkerTcpMsgDialog(0,"成功连上服务器");
-        //        QJsonObject json;
-        //        json.insert("id",id);
-        //        QJsonDocument jsonDocument;
-        //        jsonDocument.setObject(json);
-        //        QByteArray byteArray = jsonDocument.toJson(QJsonDocument::Compact);
-        //        QString strJson(byteArray);
-        //        strJson += "\n";
-        //        tcpSocket->write(strJson.toUtf8(),strJson.length());
     });
     connect(tcpSocket,&QTcpSocket::disconnected,[=]{
         qDebug()<<"掉线了";
@@ -244,6 +237,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
  * @brief WorkerTcpObject::readTcpInfoOneTime
  * 以流的形式 每次接收一张图片
  */
+
 void WorkerTcpObject::readTcpInfoOneTime()
 {
     while(tcpSocket->bytesAvailable()>0){
@@ -263,7 +257,9 @@ void WorkerTcpObject::readTcpInfoOneTime()
             //判断接收的数据是否有8字节（文件大小信息）
             //如果有则保存到basize变量中，没有则返回，继续接收数据
             if (tcpSocket->bytesAvailable() < (int)sizeof(quint64))
-            {//一幅图像的大小信息还未传输过来
+            {
+                //一幅图像的大小信息还未传输过来
+                QCoreApplication::processEvents(QEventLoop::AllEvents,10);
                 break;
             }
             in >> imageBlockSize;//一幅图像的大小信息
@@ -285,19 +281,16 @@ void WorkerTcpObject::readTcpInfoOneTime()
         //如果没有得到一幅图像的全部数据，则返回继续接收数据
         if (tcpSocket->bytesAvailable() < imageBlockSize)
         {
+//            QCoreApplication::processEvents(QEventLoop::AllEvents,10);
             break;
         }
 
         in >> imageNumberCurr;
         in >> startTimestemp;
-
-
-
+        in >> currentInterfaceType;
 
 
         in >> message;//一幅图像所有像素的完整字节流
-
-
 
         qint64 endTimestamp = QDateTime::currentMSecsSinceEpoch();
 
@@ -309,7 +302,11 @@ void WorkerTcpObject::readTcpInfoOneTime()
                 memcpy(tcpMemCacheMap[key].memStart,message.data(),imageBlockSize);
                 tcpMemCacheMap[key].memSize = imageBlockSize;
                 tcpMemCacheMap[key].picNum = imageNumberCurr;
+                qDebug()<<tr("reuse key %1").arg(key);
 
+            }else{
+                qDebug()<<tr("is going to reuse key %1 ,but it being used......").arg(key);
+                continue;
             }
         }else{
             //第一次使用此key对应的空间 此时内存还没申请
@@ -320,12 +317,12 @@ void WorkerTcpObject::readTcpInfoOneTime()
             s.memStart = new char[MAX_IMAGE_SIZE];
             memcpy(s.memStart,message.data(),imageBlockSize);
             tcpMemCacheMap.insert(key,s);
-            //            qDebug()<<"first use mem cache";
+            qDebug()<<"first use mem cache";
         }
 
 
         emit signalTcpRecvOK((int)MsgType::VideoType,tcpMemCacheMap[key].memStart, imageBlockSize);
-        emit signalSinglePicDelayAndFrameSize(imageNumberCurr,endTimestamp - startTimestemp,(double)(imageBlockSize+sizeof(qint64)*3)/1024);
+        emit signalSinglePicDelayAndFrameSize(imageNumberCurr,endTimestamp - startTimestemp,(double)(imageBlockSize+sizeof(qint64)*4)/1024);
 
 
         imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
@@ -446,7 +443,7 @@ void WorkerTcpObject::sendOneImageOneTime(QString filepath, int msgtype, QString
     out << (quint64)0;	//写入套接字 当前是第几张图片
     out << (quint64)0;	//写入套接字 当前时间戳
 
-    out << (quint64)0;	//写入套接字 当前使用的接口
+    out << (quint64)0;	//写入套接字 当前使用的接口(LTE or DSRC)
 
     out << byte;			//写入套接字的经压缩-编码后的图像数据
 
@@ -554,8 +551,8 @@ void WorkerTcpObject::slotTcpRecvVideo()
 {
     //    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
     //    readTcpInfo();
-    //    readTcpInfoByMultipleFrames();
-    readTcpInfoOneTime();
+        readTcpInfoByMultipleFrames();
+//    readTcpInfoOneTime();
 }
 void WorkerTcpObject::tcpSendText(QString messge){
 
@@ -563,6 +560,7 @@ void WorkerTcpObject::tcpSendText(QString messge){
 void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageFormat)
 {
 
-    sendOneImageOneTime(filepath,msgtype,imageFormat);
+//    sendOneImageOneTime(filepath,msgtype,imageFormat);
+    sendOneImageByMultipleFrames(filepath,msgtype,imageFormat);
 
 }

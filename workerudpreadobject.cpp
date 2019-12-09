@@ -154,7 +154,7 @@ void WorkerUdpReadObject::udpSocketStartListion()
     //加锁，访问hostIP和hostPort，因其在老进程，而此函数在新进程
     {
 //        QMutex mutex;
-        QMutexLocker locker(&mutex_hostIPandPort);
+//        QMutexLocker locker(&mutex_hostIPandPort);
         ip = hostIP;
         port = hostPort;
     }
@@ -189,27 +189,27 @@ quint64 WorkerUdpReadObject::getFrameRcvCount() const
 quint16 WorkerUdpReadObject::getHostPort() const
 {
     //    QMutex mutex;
-    QMutexLocker locker(&mutex_hostIPandPort);
+//    QMutexLocker locker(&mutex_hostIPandPort);
     return hostPort;
 }
 
 void WorkerUdpReadObject::setHostPort(const quint16 &value)
 {
 //    QMutex mutex;
-    QMutexLocker locker(&mutex_hostIPandPort);
+//    QMutexLocker locker(&mutex_hostIPandPort);
     hostPort = value;
 }
 
 QString WorkerUdpReadObject::getHostIP() const
 {
 //    QMutex mutex;
-    QMutexLocker locker(&mutex_hostIPandPort);
+//    QMutexLocker locker(&mutex_hostIPandPort);
     return hostIP;
 }
 
 void WorkerUdpReadObject::setHostIP(const QString &value)
 {
 //    QMutex mutex;
-    QMutexLocker locker(&mutex_hostIPandPort);
+//    QMutexLocker locker(&mutex_hostIPandPort);
     hostIP = value;
 }

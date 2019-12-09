@@ -13,6 +13,7 @@
 #include <QString>
 #include <QDebug>
 #include <QFile>
+#include <QCoreApplication>
 
 #include "imagetool.h"
 #include "msghead.h"
@@ -24,7 +25,7 @@ class WorkerTcpObject : public QObject
     Q_OBJECT
 public:
     explicit WorkerTcpObject(QObject *parent = nullptr);
-    ~WorkerTcpObject();
+    virtual ~WorkerTcpObject();
 
 
     __inline quint64 getPicnum() const{return picnum;}
@@ -54,7 +55,7 @@ public slots:
 
     void slotTcpReadInfo();
     void slotTcpRecvVideo();
-    void slotConnectToServer(const QString & ip, const quint16 &port, const QString &id);
+    void slotConnectToServer(const QString & ip, const quint16 &port);
 
     void slotStartTcp();
 
@@ -94,9 +95,10 @@ private:
     char *m_sendBuf;
 
     //以流的方式接收
-     qint64 imageBlockSize;//图片的大小
-     qint64 startTimestemp;//发送时候的时间戳
-     qint64 imageNumberCurr;//当前接收的图片的id
+     quint64 imageBlockSize;//图片的大小
+     quint64 startTimestemp;//发送时候的时间戳
+     quint64 imageNumberCurr;//当前接收的图片的id
+     quint64 currentInterfaceType;//当前使用的接口是4G还是DSRC
 //    char * m_buf;
 
      // Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构体
