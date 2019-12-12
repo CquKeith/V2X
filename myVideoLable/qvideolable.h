@@ -10,8 +10,8 @@ class qVideoLable : public QLabel
 {
     Q_OBJECT
 public:
-    qVideoLable();
-    ~qVideoLable();
+    qVideoLable(QWidget *parent = 0);
+    virtual ~qVideoLable();
 signals:
     void signalLableClicked();
     void signalLableDoubleClicked();

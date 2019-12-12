@@ -19,7 +19,7 @@ class myQSpliter : public QWidget
 
 public:
     explicit myQSpliter(QWidget *parent = 0);
-    ~myQSpliter();
+    virtual ~myQSpliter();
     float getMaxListFrameWidthRatio() const;
     void setMaxListFrameWidthRatio(float value);
 

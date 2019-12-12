@@ -1,7 +1,8 @@
 #include "qvideolable.h"
 
-qVideoLable::qVideoLable()
+qVideoLable::qVideoLable(QWidget *parent)
 {
+    Q_UNUSED(parent)
     _mousePressed = false;
     _clickedNum = 0;
     timer = new QTimer(this);

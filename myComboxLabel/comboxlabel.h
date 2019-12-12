@@ -16,6 +16,7 @@ class ComboxLabel : public QLabel
     Q_OBJECT
 public:
     ComboxLabel(const QString text="", QWidget *parent=Q_NULLPTR);
+    ~ComboxLabel();
 
     void addComboboxText(QString text);
 

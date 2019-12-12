@@ -40,7 +40,7 @@
 #include "myComboxLabel/comboxlabel.h"
 
 #include "dialogselectvideosourcedevice.h"
-
+#include "mytcpvideodisplayform.h"
 //#include <QMetaType>
 
 #define SIGHT_SHARE_TIME 9999
@@ -57,6 +57,7 @@ namespace Ui {
 class MainWindow;
 }
 class ComboxLabel;
+class MyTcpVideoDisplayForm;
 using namespace cv;
 QImage MatToQImage(const cv::Mat& mat);
 cv::Mat QImage2cvMat(QImage &image);
@@ -71,7 +72,7 @@ public:
 //    __inline quint64 getPic_num_hasSended() const;
 //    __inline void clearPicNum(){pic_num_hasSended = 0;}
 
-    Q_INVOKABLE void showRecvImage(QPixmap &pixmap){label_videoReceived->setPixmap(pixmap);}
+    Q_INVOKABLE void showRecvImage(QPixmap &pixmap){label_videoReceivedUdp->setPixmap(pixmap);}
 
 signals:
     void signal_udpSendText(QString);   //使用线程发送字符串
@@ -145,7 +146,7 @@ private:
 
     //接收实时视频显示
 //    QNavigationWidget * realtimeSetting;
-    qVideoLable * label_videoReceived;
+    qVideoLable * label_videoReceivedUdp;
     // 显示视频来源
     QLabel *labelVideoFrom;
 
@@ -168,6 +169,8 @@ private:
 
     /*显示当前使用的网络接口和视频是质量*/
     ComboxLabel *sender_interface,*sender_quality,*receiver_interface,*receiver_quality;
+
+    MyTcpVideoDisplayForm * form_display_tcp_video;
 protected:
     void closeEvent(QCloseEvent *e);
 };

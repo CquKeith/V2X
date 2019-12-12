@@ -46,7 +46,8 @@ SOURCES += \
     workerudpsendobject.cpp \
     workertcpobject.cpp \
     imagetool.cpp \
-    dialogselectvideosourcedevice.cpp
+    dialogselectvideosourcedevice.cpp \
+    mytcpvideodisplayform.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -56,11 +57,13 @@ HEADERS += \
     msghead.h \
     workertcpobject.h \
     imagetool.h \
-    dialogselectvideosourcedevice.h
+    dialogselectvideosourcedevice.h \
+    mytcpvideodisplayform.h
 
 FORMS += \
         mainwindow.ui \
-    dialogselectvideosourcedevice.ui
+    dialogselectvideosourcedevice.ui \
+    mytcpvideodisplayform.ui
 
 RESOURCES += \
     skin.qrc \

@@ -57,7 +57,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidgetMain">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_index">
        <layout class="QGridLayout" name="gridLayout">
@@ -321,7 +321,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget_Content">
           <property name="currentIndex">
-           <number>3</number>
+           <number>4</number>
           </property>
           <widget class="QWidget" name="page_carInfo">
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -990,7 +990,7 @@
    <sender>tb_exit</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>close()</slot>
+   <slot>deleteLater()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>667</x>

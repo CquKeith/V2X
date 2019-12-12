@@ -27,6 +27,11 @@ ComboxLabel::ComboxLabel(const QString text, QWidget *parent)
 
 }
 
+ComboxLabel::~ComboxLabel()
+{
+
+}
+
 void ComboxLabel::addComboboxText(QString text)
 {
     combox.addItem(text);

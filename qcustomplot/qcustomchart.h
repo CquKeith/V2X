@@ -22,7 +22,7 @@ class QCustomChart : public QWidget
     Q_OBJECT
 public:
     explicit QCustomChart(QWidget *parent = 0);
-    ~QCustomChart();
+    virtual ~QCustomChart();
 
     void setTitle(const QString &text);
 

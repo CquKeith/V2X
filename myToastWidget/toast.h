@@ -21,7 +21,7 @@ public:
     };
 
     explicit Toast(QWidget *parent = 0, QString msg="Toast",TimeLenth time_lenth=SHORT);
-    ~Toast();
+    virtual ~Toast();
 
 
 private:

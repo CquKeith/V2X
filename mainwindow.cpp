@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //    SyncTimeStamp();//同步时间戳
 
     ui->setupUi(this);
+    form_display_tcp_video = new MyTcpVideoDisplayForm;
     defaultCarPicPath = "./images/car.jpg";
     //    pic_num_hasSended = 0;
 
@@ -39,6 +40,8 @@ MainWindow::MainWindow(QWidget *parent) :
     VIDEOSOURCE = "./videoSource/2018-11-24 10.18.51.avi";
     deviceType=VideoDeviceType::Camera;
 
+
+
     //    QTimer::singleShot(10,[=]{ui->widgetRealTimeVideo->refreshForm();ui->widgetSightShare->refreshForm();});
 //    qRegisterMetaType<VideoQualityType>("VideoQualityType");
 
@@ -48,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     saveSettings();
+    form_display_tcp_video->deleteLater();
     workerUdpReceiveObj->deleteLater();
     workerUdpSendObj->deleteLater();
     workerTcpObj->deleteLater();
@@ -128,7 +132,7 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len,int quality)
         //        chartPicSize->addData(++currentIndex,loss);
         workerUdpReceiveObj->clearFrameRcvCount();
         videowriter.release();
-        label_videoReceived->setPixmap(QPixmap(defaultCarPicPath));
+        label_videoReceivedUdp->setPixmap(QPixmap(defaultCarPicPath));
 
         break;
     }
@@ -164,7 +168,7 @@ void MainWindow::slotRecv(int msgtype, char *buf, int len,int quality)
             //            ui->label_video->setPixmap(pixmap);
             //            QImage img((uchar*)buf,ui->widget_RecvVideo->width(),ui->widget_RecvVideo->height(),QImage::Format_Indexed8);
             //            ui->widget_RecvVideo->displayImage(img);
-            label_videoReceived->setPixmap(pixmap);
+            label_videoReceivedUdp->setPixmap(pixmap);
         }
         receiver_quality->showCurrentVideoQuality((VideoQualityType)quality);
 
@@ -196,9 +200,9 @@ void MainWindow::slotTcpRecv(int msgtype, char *buf, int len)
         //            ui->textBrowser_recvText->append(str);
         //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
         //        chartPicSize->addData(++currentIndex,loss);
-        workerUdpReceiveObj->clearFrameRcvCount();
+//        workerUdpReceiveObj->clearFrameRcvCount();
         videowriter.release();
-        label_videoReceived->setPixmap(QPixmap(defaultCarPicPath));
+        form_display_tcp_video->showVideoFrame(QPixmap(defaultCarPicPath));
 
         break;
     }
@@ -209,7 +213,7 @@ void MainWindow::slotTcpRecv(int msgtype, char *buf, int len)
 
         pixmap.loadFromData((uchar*)buf, len, "JPG");
 
-        label_videoReceived->setPixmap(pixmap);
+        form_display_tcp_video->showVideoFrame(pixmap);
 
         break;
     }
@@ -444,6 +448,14 @@ void MainWindow::InitForm()
     //数据分析界面
     InitAnalyseForm();
 
+    connect(ui->checkBox_UseLTE,&QCheckBox::toggled,this,[=]{
+        if(ui->checkBox_UseLTE->isChecked()){
+            form_display_tcp_video->show();
+        }else{
+            form_display_tcp_video->hide();
+        }
+    });
+
 }
 /**
  * @brief MainWindow::InitBackMenu
@@ -485,32 +497,34 @@ void MainWindow::InitRealTimeForm()
     realtimeSetting->addItem("都不看");
 
 
-    label_videoReceived = new qVideoLable;
-    label_videoReceived->setScaledContents(true);
-    label_videoReceived->setPixmap(QPixmap(defaultCarPicPath));
+    label_videoReceivedUdp = new qVideoLable;
+    label_videoReceivedUdp->setScaledContents(true);
+    label_videoReceivedUdp->setPixmap(QPixmap(defaultCarPicPath));
 
-    connect(label_videoReceived,&qVideoLable::signalLableClicked,[=]{
+
+    connect(label_videoReceivedUdp,&qVideoLable::signalLableClicked,[=]{
         qDebug()<<"单击";
 
     });
-    connect(label_videoReceived,&qVideoLable::signalLableDoubleClicked,[=]{
-        qDebug()<<"双击" << label_videoReceived->windowFlags();
-        static QFlags<Qt::WindowType> flags = label_videoReceived->windowFlags();
+    connect(label_videoReceivedUdp,&qVideoLable::signalLableDoubleClicked,[=]{
+        qDebug()<<"双击" << label_videoReceivedUdp->windowFlags();
+        static QFlags<Qt::WindowType> flags = label_videoReceivedUdp->windowFlags();
 
 
-        if(label_videoReceived->isFullScreen()){
-            label_videoReceived->setWindowFlags(flags);
-            label_videoReceived->showNormal();
+        if(label_videoReceivedUdp->isFullScreen()){
+            label_videoReceivedUdp->setWindowFlags(flags);
+            label_videoReceivedUdp->showNormal();
         }else{
-            label_videoReceived->setWindowFlags(Qt::Dialog);
-            label_videoReceived->showFullScreen();
+            label_videoReceivedUdp->setWindowFlags(Qt::Dialog);
+            label_videoReceivedUdp->showFullScreen();
         }
     });
 
-    ui->widgetRealTimeVideo->addContentWidget(label_videoReceived);
+
+    ui->widgetRealTimeVideo->addContentWidget(label_videoReceivedUdp);
     ui->widgetRealTimeVideo->setMaxListFrameWidthRatio(0.2);
 
-    labelVideoFrom = new QLabel(label_videoReceived);
+    labelVideoFrom = new QLabel(label_videoReceivedUdp);
     labelVideoFrom->move(20,20);
     labelVideoFrom->setStyleSheet("color: rgb(255, 0, 0);background:transparent;font:12pt bold \"Times New Roman\";");
 
@@ -531,14 +545,14 @@ void MainWindow::InitRealTimeForm()
 
     //在下方添加 “接口选择”、“视频质量选择”的下拉框
 
-    receiver_interface = new ComboxLabel("DSRC",label_videoReceived);
-    receiver_interface->move(label_videoReceived->width()*0.85,label_videoReceived->height()*0.75);
+    receiver_interface = new ComboxLabel("DSRC",label_videoReceivedUdp);
+    receiver_interface->move(label_videoReceivedUdp->width()*0.85,label_videoReceivedUdp->height()*0.75);
     receiver_interface->setStyleSheet("color: rgb(255, 0, 255);background:transparent;font:12pt bold \"Times New Roman\";");
     receiver_interface->addComboboxText("DSRC");
     receiver_interface->addComboboxText("4G");
 
-    receiver_quality = new ComboxLabel("1080P",label_videoReceived);
-    receiver_quality->move(label_videoReceived->width()*0.85+100,label_videoReceived->height()*0.75);
+    receiver_quality = new ComboxLabel("1080P",label_videoReceivedUdp);
+    receiver_quality->move(label_videoReceivedUdp->width()*0.85+100,label_videoReceivedUdp->height()*0.75);
     receiver_quality->setStyleSheet("color: rgb(255, 0, 255);background:transparent;font:12pt bold \"Times New Roman\";");
 
     receiver_quality->addComboboxText("1080P");

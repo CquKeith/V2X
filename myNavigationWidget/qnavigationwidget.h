@@ -10,7 +10,7 @@ class QNavigationWidget : public QWidget
     
 public:
     QNavigationWidget(QWidget *parent=0);
-    ~QNavigationWidget();
+    virtual ~QNavigationWidget();
 
     void addItem(const QString &title);
     void setWidth(const int &width);

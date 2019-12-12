@@ -63,8 +63,8 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
                 char * m_buf;
                 quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
                 /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
-                if(memCacheMap.contains(key)){
-                    s_memCache mem_cache = memCacheMap[key];
+                if(memCacheMapUdp.contains(key)){
+                    s_memCache mem_cache = memCacheMapUdp[key];
 //                    m_buf = mem_cache.memStart;
                     //此片内存别人已经用完，可以再次使用
                     if(mem_cache.isVisited){
@@ -83,7 +83,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
                             mem_cache.isVisited = false;
                             mem_cache.memStart = m_buf;
                             mem_cache.memSize = 0;
-                            memCacheMap[key] = mem_cache;
+                            memCacheMapUdp[key] = mem_cache;
                         }
 
                     }
@@ -96,7 +96,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
                     mem_cache.memStart = m_buf;
                     mem_cache.memSize = 0;
                     mem_cache.picNum = mes->uPicnum;
-                    memCacheMap.insert(key,mem_cache);
+                    memCacheMapUdp.insert(key,mem_cache);
                 }
 
                 memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
@@ -113,7 +113,7 @@ void WorkerUdpReadObject::slot_ReadUdpDatagrams()
 //                    qDebug()<<"received an image,then emit signal to GUI Thread";
                     emit sigRecvOk((int)mes->msgType,m_buf, mes->uDataFrameSize,(int)mes->video_quality_type);
                     emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
-                    memCacheMap[key].isVisited = true;
+                    memCacheMapUdp[key].isVisited = true;
                 }
             }
         }else if(mes->msgType == MsgType::TextType ){

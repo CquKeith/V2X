@@ -102,7 +102,7 @@ private:
 //    char * m_buf;
 
      // Map的key是当前图片的id%MEM_CACHE_MAX_SIZE,value是这段内存的结构体
-     QMap<quint16,s_memCache> tcpMemCacheMap;
+//     QMap<quint16,s_memCache> tcpMemCacheMap;
 };
 
 #endif // WORKERTCPSENDOBJECT_H

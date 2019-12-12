@@ -16,7 +16,7 @@ class DialogSelectVideoSourceDevice : public QDialog
 
 public:
     explicit DialogSelectVideoSourceDevice(QWidget *parent = 0,QString device="");
-    virtual ~DialogSelectVideoSourceDevice();
+    ~DialogSelectVideoSourceDevice();
 
 private slots:
     void on_pushButton_clicked();

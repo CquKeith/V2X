@@ -53,7 +53,7 @@ void WorkerTcpObject::slotStartTcp()
     });
     connect(tcpSocket,&QTcpSocket::disconnected,[=]{
         qDebug()<<"掉线了";
-        emit signalWorkerTcpMsgDialog(0,"断开连接...");
+        emit signalWorkerTcpMsgDialog(0,"连接断开...");
     });
     connect(tcpSocket,&QTcpSocket::readyRead,this,&WorkerTcpObject::slotTcpRecvVideo);
 
@@ -83,8 +83,8 @@ void WorkerTcpObject::readTcpInfo()
             char * m_buf;
             quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
             /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
-            if(memCacheMap.contains(key)){
-                s_memCache mem_cache = memCacheMap[key];
+            if(memCacheMapTcp.contains(key)){
+                s_memCache mem_cache = memCacheMapTcp[key];
 
                 //此片内存别人已经用完，可以再次使用
                 if(mem_cache.isVisited){
@@ -103,7 +103,7 @@ void WorkerTcpObject::readTcpInfo()
                         mem_cache.isVisited = false;
                         mem_cache.memStart = m_buf;
                         mem_cache.memSize = 0;
-                        memCacheMap[key] = mem_cache;
+                        memCacheMapTcp[key] = mem_cache;
                     }
                 }
             }
@@ -115,7 +115,7 @@ void WorkerTcpObject::readTcpInfo()
                 mem_cache.memStart = m_buf;
                 mem_cache.memSize = 0;
                 mem_cache.picNum = mes->uPicnum;
-                memCacheMap.insert(key,mem_cache);
+                memCacheMapTcp.insert(key,mem_cache);
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
 
@@ -124,7 +124,7 @@ void WorkerTcpObject::readTcpInfo()
             if (hasRecvedSize >= (mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize)) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
                 emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
-                memCacheMap[key].isVisited = true;
+                memCacheMapTcp[key].isVisited = true;
                 hasRecvedSize = 0;
             }
         }
@@ -175,8 +175,8 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
             char * m_buf;
             quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
             /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
-            if(memCacheMap.contains(key)){
-                s_memCache mem_cache = memCacheMap[key];
+            if(memCacheMapTcp.contains(key)){
+                s_memCache mem_cache = memCacheMapTcp[key];
 
                 //此片内存别人已经用完，可以再次使用
                 if(mem_cache.isVisited){
@@ -195,7 +195,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
                         mem_cache.isVisited = false;
                         mem_cache.memStart = m_buf;
                         mem_cache.memSize = 0;
-                        memCacheMap[key] = mem_cache;
+                        memCacheMapTcp[key] = mem_cache;
                     }
                 }
             }
@@ -207,7 +207,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
                 mem_cache.memStart = m_buf;
                 mem_cache.memSize = 0;
                 mem_cache.picNum = mes->uPicnum;
-                memCacheMap.insert(key,mem_cache);
+                memCacheMapTcp.insert(key,mem_cache);
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
 
@@ -216,7 +216,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
             if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
                 emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
-                memCacheMap[key].isVisited = true;
+                memCacheMapTcp[key].isVisited = true;
                 //                hasRecvedSize = 0;
             }
         }
@@ -240,7 +240,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
 
 void WorkerTcpObject::readTcpInfoOneTime()
 {
-    while(tcpSocket->bytesAvailable()>0){
+    forever{
 
         QByteArray message;//存放从服务器接收到的字节流数据
         QDataStream in(tcpSocket);	//将客户端套接字与输入数据流对象in绑定
@@ -259,8 +259,8 @@ void WorkerTcpObject::readTcpInfoOneTime()
             if (tcpSocket->bytesAvailable() < (int)sizeof(quint64))
             {
                 //一幅图像的大小信息还未传输过来
-                QCoreApplication::processEvents(QEventLoop::AllEvents,10);
-                break;
+//                QCoreApplication::processEvents(QEventLoop::AllEvents,10);
+                return;
             }
             in >> imageBlockSize;//一幅图像的大小信息
 
@@ -281,8 +281,8 @@ void WorkerTcpObject::readTcpInfoOneTime()
         //如果没有得到一幅图像的全部数据，则返回继续接收数据
         if (tcpSocket->bytesAvailable() < imageBlockSize)
         {
-//            QCoreApplication::processEvents(QEventLoop::AllEvents,10);
-            break;
+            //            QCoreApplication::processEvents(QEventLoop::AllEvents,10);
+            return;
         }
 
         in >> imageNumberCurr;
@@ -296,13 +296,13 @@ void WorkerTcpObject::readTcpInfoOneTime()
 
         quint16 key = imageNumberCurr % MEM_CACHE_MAX_SIZE;
         /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
-        if(tcpMemCacheMap.contains(key)){
-            if(tcpMemCacheMap[key].isVisited){
+        if(memCacheMapTcp.contains(key)){
+            if(memCacheMapTcp[key].isVisited){
                 //重复使用此key对应的内存
-                memcpy(tcpMemCacheMap[key].memStart,message.data(),imageBlockSize);
-                tcpMemCacheMap[key].memSize = imageBlockSize;
-                tcpMemCacheMap[key].picNum = imageNumberCurr;
-                qDebug()<<tr("reuse key %1").arg(key);
+                memcpy(memCacheMapTcp[key].memStart,message.data(),imageBlockSize);
+                memCacheMapTcp[key].memSize = imageBlockSize;
+                memCacheMapTcp[key].picNum = imageNumberCurr;
+//                qDebug()<<tr("reuse key %1").arg(key);
 
             }else{
                 qDebug()<<tr("is going to reuse key %1 ,but it being used......").arg(key);
@@ -316,19 +316,19 @@ void WorkerTcpObject::readTcpInfoOneTime()
             s.picNum = imageNumberCurr;
             s.memStart = new char[MAX_IMAGE_SIZE];
             memcpy(s.memStart,message.data(),imageBlockSize);
-            tcpMemCacheMap.insert(key,s);
-            qDebug()<<"first use mem cache";
+            memCacheMapTcp.insert(key,s);
+//            qDebug()<<"first use mem cache";
         }
 
 
-        emit signalTcpRecvOK((int)MsgType::VideoType,tcpMemCacheMap[key].memStart, imageBlockSize);
+        emit signalTcpRecvOK((int)MsgType::VideoType,memCacheMapTcp[key].memStart, imageBlockSize);
         emit signalSinglePicDelayAndFrameSize(imageNumberCurr,endTimestamp - startTimestemp,(double)(imageBlockSize+sizeof(qint64)*4)/1024);
 
 
         imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
         startTimestemp = 0;
 
-        tcpMemCacheMap[key].isVisited = true;
+        memCacheMapTcp[key].isVisited = true;
 
 
     }
@@ -551,8 +551,8 @@ void WorkerTcpObject::slotTcpRecvVideo()
 {
     //    memset(recvBuf, 0, MAX_ONE_FRAME_SIZE);
     //    readTcpInfo();
-        readTcpInfoByMultipleFrames();
-//    readTcpInfoOneTime();
+    //        readTcpInfoByMultipleFrames();
+    readTcpInfoOneTime();
 }
 void WorkerTcpObject::tcpSendText(QString messge){
 
@@ -560,7 +560,7 @@ void WorkerTcpObject::tcpSendText(QString messge){
 void WorkerTcpObject::tcpSendImage(QString filepath, int msgtype, QString imageFormat)
 {
 
-//    sendOneImageOneTime(filepath,msgtype,imageFormat);
-    sendOneImageByMultipleFrames(filepath,msgtype,imageFormat);
+    sendOneImageOneTime(filepath,msgtype,imageFormat);
+    //    sendOneImageByMultipleFrames(filepath,msgtype,imageFormat);
 
 }
