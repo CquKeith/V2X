@@ -57,6 +57,7 @@ MainWindow::~MainWindow()
     workerUdpReceiveObj->deleteLater();
     workerUdpSendObj->deleteLater();
     workerTcpObj->deleteLater();
+
     delete ui;
 }
 

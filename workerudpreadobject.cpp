@@ -11,13 +11,15 @@ WorkerUdpReadObject::WorkerUdpReadObject(QObject *parent, QString localIP, quint
 
     //使用信号触发槽函数，在槽函数中实例化UdpSocket 让其存在于新线程中
     connect(this,&WorkerUdpReadObject::signalUdpSocketStartListion,this,&WorkerUdpReadObject::udpSocketStartListion);
+    connect(this,&WorkerUdpReadObject::finished,workthread,&QThread::quit);
     emit signalUdpSocketStartListion();
 
 }
 
 WorkerUdpReadObject::~WorkerUdpReadObject()
 {
-    workthread->quit();
+//    workthread->quit();
+    emit finished();
 
 //    qDebug()<<tr("in %1() , thread id is:%2").arg(__FUNCTION__).arg((int)QThread::currentThreadId());
     //此处要小心，m_buf是在新进程中的，因此若是析构函数是由信号触发而执行的话，则不会有问题。否则，会出问题的

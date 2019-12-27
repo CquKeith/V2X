@@ -40,6 +40,8 @@ public:
     void setWaitForReadyTime(int value);
 
 signals:
+    void finished();
+
     void signalWorkerTcpMsgDialog(int,QString);
 
     void signalTcpRecvOK(int msgtype, char *buf, int len);

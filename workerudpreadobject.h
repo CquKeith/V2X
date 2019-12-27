@@ -32,6 +32,7 @@ public:
 
 
 signals:
+    void finished();
     void signalUdpSocketStartListion();
     void sigRecvOk(int msgtype, char *buf, int len,int quality);
     //frameSize : KB

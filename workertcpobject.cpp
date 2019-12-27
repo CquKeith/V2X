@@ -9,7 +9,7 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
     picnum = 0;
 
     connect(this,&WorkerTcpObject::signalStartTcp,this,&WorkerTcpObject::slotStartTcp);
-
+    connect(this,&WorkerTcpObject::finished,workthread,&QThread::quit);
     //    recvBuf = new char[65536];
 
     emit signalStartTcp();
@@ -21,7 +21,8 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 WorkerTcpObject::~WorkerTcpObject()
 {
     //    delete recvBuf;
-    workthread->quit();
+//    workthread->quit();
+    emit finished();
     delete m_sendBuf;
 
 }

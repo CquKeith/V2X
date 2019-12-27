@@ -41,6 +41,7 @@ public:
     __inline void clearPicNum(){picnum = 0;}
 
 signals:
+    void finished();
     void signal_ImageSendProcess(int process,int currentFrame,int totalFrame);
 
     void signalWorkerUdpSenderMsgDialog(int,QString);
