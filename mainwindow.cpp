@@ -6,6 +6,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     //    SyncTimeStamp();//同步时间戳
+    /*生成videoSource文件夹，以便存储分享的视野视频文件*/
+    checkVideoSourceFolder();
 
     ui->setupUi(this);
     form_display_tcp_video = new MyTcpVideoDisplayForm;
@@ -769,6 +771,17 @@ void MainWindow::saveSettings()
     setting.endArray();
 
     setting.endGroup();
+}
+
+void MainWindow::checkVideoSourceFolder()
+{
+    // 检查目录是否存在，若不存在则新建
+    QString path = QDir::currentPath()+"/videoSource";
+    QDir dir(path);
+    if(!dir.exists())
+    {
+        dir.mkdir(path);
+    }
 }
 /**
  * @brief MainWindow::loadSettings

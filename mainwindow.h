@@ -128,6 +128,9 @@ private:
     void saveSettings();
 //    void loadSettings();
 
+    /*./videoSource文件夹不存在就创建*/
+    void checkVideoSourceFolder();
+
     inline void ToastString(QString msg="", Toast::TimeLenth time_lenth=Toast::TimeLenth::SHORT);//toast
 
     void changeSkin();  //换肤
