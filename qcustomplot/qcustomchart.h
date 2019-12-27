@@ -29,8 +29,9 @@ public:
     void setXaxisLabel(const QString &text);
     void setYaxisLabel(const QString &text);
 
-    QString getXaxisLabel();
-    QString getYaxisLabel();
+    __inline QString getXaxisLabel();
+    __inline QString getYaxisLabel();
+    QString getYaxisLabelUnit();
 
     void setYaxisRange(double lower, double upper);
 
@@ -54,6 +55,7 @@ public slots:
 
     void saveAsImage();
     void saveAsExcel();
+    void saveAsCSV();
 
 private slots:
     void mousePress(QMouseEvent* mevent);

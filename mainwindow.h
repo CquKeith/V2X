@@ -107,6 +107,8 @@ private slots:
 
     void loadSettings();
 
+    void loadLTEAndDSRCPortIPSetting();
+
 private:
     Ui::MainWindow *ui;
     QPoint mousePoint;  //鼠标拖动自定义标题栏时的坐标

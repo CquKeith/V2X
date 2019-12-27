@@ -32,6 +32,7 @@ void QCustomChart::setXaxisLabel(const QString &text)
 void QCustomChart::setYaxisLabel(const QString &text)
 {
     m_pCustomPlot->yAxis->setLabel(text);
+    qDebug()<<__FUNCTION__<<" Unit: "<<getYaxisLabelUnit();
 }
 
 QString QCustomChart::getXaxisLabel()
@@ -42,6 +43,15 @@ QString QCustomChart::getXaxisLabel()
 QString QCustomChart::getYaxisLabel()
 {
     return m_pCustomPlot->yAxis->label();
+}
+/**
+ * @brief QCustomChart::getYaxisLabelUnit
+ * @return Y轴括号里面的 单位
+ */
+QString QCustomChart::getYaxisLabelUnit()
+{
+    QString l = getYaxisLabel();
+    return l.mid(l.indexOf("(")+1).replace(")","");
 }
 
 void QCustomChart::setYaxisRange(double lower, double upper)
@@ -68,10 +78,11 @@ void QCustomChart::setData(const QVector<double> &keys, const QVector<double> &v
 void QCustomChart::addData(double key, double value)
 {
     m_pCustomPlot->graph(0)->addData(key,value);
-    m_dataList.append(m_Data(key,value));
+//    m_dataList.append(m_Data(key,value));
 
-    m_pTextBrowser->append(tr("%1：%2  %3：%4").arg(getXaxisLabel()).arg(key).arg(getYaxisLabel()).arg(value));
-    slotRefresh();
+    m_pTextBrowser->append(tr("%1 , %2 %3").arg(key).arg(value).arg(getYaxisLabelUnit()));
+//    slotRefresh();
+
 }
 /**
  * @brief QCustomChart::createWindow
@@ -99,7 +110,7 @@ void QCustomChart::createWindow()
     downloadtoPic=new QAction(QIcon(":/chart/images/image"),"另存为图片",mDownloadMenu);
     downloadtoExcel=new QAction(QIcon(":/chart/images/excel"),"另存为Excel",mDownloadMenu);
     connect(downloadtoPic,&QAction::triggered,this,&QCustomChart::saveAsImage);
-    connect(downloadtoExcel,&QAction::triggered,this,&QCustomChart::saveAsExcel);
+    connect(downloadtoExcel,&QAction::triggered,this,&QCustomChart::saveAsCSV);
     mDownloadMenu->addAction(downloadtoPic);
     mDownloadMenu->addAction(downloadtoExcel);
     mDownloadMenu->setStyleSheet("QPushButton::menu-indicator{image:none}");
@@ -319,6 +330,25 @@ void QCustomChart::saveAsExcel()
         delete excel;
         excel=NULL;
     }
+}
+/**
+ * @brief QCustomChart::saveAsCSV
+ * 保存text到csv
+ */
+void QCustomChart::saveAsCSV()
+{
+    QFile file;
+    file.setFileName(QFileDialog::getSaveFileName(this,tr("保存路径"),".",tr("CSV File(*.csv)")));
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&file);
+
+    out << getXaxisLabel() <<","<<getYaxisLabel()<<endl;
+    out << m_pTextBrowser->toPlainText().replace(getYaxisLabelUnit(),"");
+
+    file.close();
+
+    emit signalQCustomToGUI("导出完毕~");
+
 }
 
 void QCustomChart::slotPrimaryData()

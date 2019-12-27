@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    saveSettings();
+//    saveSettings();
     form_display_tcp_video->deleteLater();
     workerUdpReceiveObj->deleteLater();
     workerUdpSendObj->deleteLater();
@@ -456,6 +456,15 @@ void MainWindow::InitForm()
         }
     });
 
+    /*选择4G或者LTE配置时，加载之前的设置*/
+    connect(ui->rbDSRCSetting,&QRadioButton::toggled,this,&MainWindow::loadLTEAndDSRCPortIPSetting);
+    connect(ui->rbLTESetting,&QRadioButton::toggled,this,&MainWindow::loadLTEAndDSRCPortIPSetting);
+
+    // 测试数据
+//    for(int i=1;i<=100;++i){
+//        chartPicUdp->addData(i,i*i);
+//    }
+
 }
 /**
  * @brief MainWindow::InitBackMenu
@@ -726,20 +735,32 @@ void MainWindow::saveSettings()
     /*视频帧率*/
     setting.setValue("local/FPS",ui->lineEdit_videoFPS->text());
 
+    /*是否保存分享的视频*/
+    setting.setValue("local/saveSharedVideo",ui->checkBoxStroeSightShare->isChecked());
+
     /*对方IP地址和端口号*/
     setting.beginGroup("otherSize");
     setting.setValue("port",ui->lineEdit_otherPort->text());
+    setting.setValue("ip",ui->comboBoxOtherIP->currentText());
 
     setting.setValue("radioButtonDSRCSetting",ui->rbDSRCSetting->isChecked());
     setting.setValue("radioButtonLTESetting",ui->rbLTESetting->isChecked());
+
+    /*分别保存DSRC和4G当前的IP地址和端口号*/
+    if(ui->rbDSRCSetting->isChecked()){
+        setting.setValue("DSRC_IP",ui->comboBoxOtherIP->currentText());
+        setting.setValue("DSRC_Port",ui->lineEdit_otherPort->text());
+    }else if(ui->rbLTESetting->isChecked()){
+        setting.setValue("LTE_IP",ui->comboBoxOtherIP->currentText());
+        setting.setValue("LTE_Port",ui->lineEdit_otherPort->text());
+    }
+
 
     setting.setValue("checkBoxDSRCSetting",ui->checkBox_UseDSRC->isChecked());
     setting.setValue("checkBoxLTESetting",ui->checkBox_UseLTE->isChecked());
 
     setting.beginWriteArray("IP");
     int count = ui->comboBoxOtherIP->count();
-    int currentIndex = ui->comboBoxOtherIP->currentIndex();
-    setting.setValue("currentIndex",currentIndex);
     for(int i=0;i<count;i++)
     {
         setting.setArrayIndex(i);
@@ -761,13 +782,17 @@ void MainWindow::loadSettings()
     ui->lineEdit_localPort->setText(setting.value("local/port").toString());
     /*视频帧率*/
     ui->lineEdit_videoFPS->setText(setting.value("local/FPS").toString());
+    /*是否保存分享的视频*/
+    ui->checkBoxStroeSightShare->setChecked(setting.value("local/saveSharedVideo").toBool());
 
     /*对方IP地址和端口号*/
     setting.beginGroup("otherSize");
     ui->lineEdit_otherPort->setText(setting.value("port").toString());
+    ui->comboBoxOtherIP->setCurrentText(setting.value("ip").toString());
 
     ui->rbDSRCSetting->setChecked(setting.value("radioButtonDSRCSetting").toBool());
     ui->rbLTESetting->setChecked(setting.value("radioButtonLTESetting").toBool());
+
 
     ui->checkBox_UseDSRC->setChecked(setting.value("checkBoxDSRCSetting").toBool());
     ui->checkBox_UseLTE->setChecked(setting.value("checkBoxLTESetting").toBool());
@@ -778,15 +803,38 @@ void MainWindow::loadSettings()
         setting.setArrayIndex(i);
         ui->comboBoxOtherIP->addItem(setting.value("ip").toString());
     }
-    int currentIndex = setting.value("currentIndex").toInt();
-    if(currentIndex >= 0){
-        ui->comboBoxOtherIP->setCurrentIndex(currentIndex);
-    }
+//    int currentIndex = setting.value("currentIndex").toInt();
+//    if(currentIndex >= 0){
+//        ui->comboBoxOtherIP->setCurrentIndex(currentIndex);
+//    }
 
     setting.endArray();
 
     setting.endGroup();
 
+}
+/**
+ * @brief MainWindow::loadLTEAndDSRCPortIPSetting
+ * 只获取上次的 LTE和 4G 的保存IP和Port信息
+ */
+void MainWindow::loadLTEAndDSRCPortIPSetting()
+{
+    QSettings setting("config.ini",QSettings::IniFormat);
+
+    /*对方IP地址和端口号*/
+    setting.beginGroup("otherSize");
+
+    /*分别保存DSRC和4G当前的IP地址和端口号*/
+    if(ui->rbDSRCSetting->isChecked()){
+
+        ui->comboBoxOtherIP->setCurrentText(setting.value("DSRC_IP").toString());
+        ui->lineEdit_otherPort->setText(setting.value("DSRC_Port").toString());
+
+    }else if(ui->rbLTESetting->isChecked()){
+        ui->comboBoxOtherIP->setCurrentText(setting.value("LTE_IP").toString());
+        ui->lineEdit_otherPort->setText(setting.value("LTE_Port").toString());
+    }
+    setting.endGroup();
 }
 /**
  * @brief MainWindow::ToastString
@@ -1053,4 +1101,5 @@ void MainWindow::on_pb_setOtherSocket_clicked()
         emit signal_ConnectToServer(ip,port);
 
     }
+    saveSettings();
 }
