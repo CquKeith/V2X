@@ -23,7 +23,7 @@ WorkerTcpObject::~WorkerTcpObject()
     //    delete recvBuf;
 //    workthread->quit();
     emit finished();
-    delete m_sendBuf;
+    delete[] m_sendBuf;
 
 }
 
@@ -415,7 +415,7 @@ void WorkerTcpObject::sendOneImageByMultipleFrames(QString filepath, int msgtype
     }
     imgfile.close();
 
-    //    delete m_sendBuf;
+    //    delete[] m_sendBuf;
 }
 /**
  * @brief WorkerTcpObject::sendOneImageOneTime
