@@ -43,7 +43,7 @@
 #include "mytcpvideodisplayform.h"
 //#include <QMetaType>
 
-#define SIGHT_SHARE_TIME 9999
+#define SIGHT_SHARE_TIME 2000
 
 //#define VIDEOSOURCE "./videoSource/2018-11-24 10.18.51.avi"
 
@@ -52,6 +52,10 @@
 //#define VIDEOSOURCE 0
 
 #include <QSettings>
+
+#ifndef DEBUG_SINGLE_PICTURE
+#define DEBUG_SINGLE_PICTURE true
+#endif
 
 namespace Ui {
 class MainWindow;
@@ -146,7 +150,7 @@ private:
     VideoWriter videowriter;
     QTimer *timer_get_video;
     QTimer *timer_sightShareTimeLeft;
-    quint16 time_sightshareSecondLeft;//定时视野共享的时间
+    qint16 time_sightshareSecondLeft;//定时视野共享的时间
     QLabel *label_sightShare;//显示还剩多少秒结束共享
 
     //接收实时视频显示

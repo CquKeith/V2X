@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-//    saveSettings();
+    //    saveSettings();
     form_display_tcp_video->deleteLater();
     workerUdpReceiveObj->deleteLater();
     workerUdpSendObj->deleteLater();
@@ -203,7 +203,7 @@ void MainWindow::slotTcpRecv(int msgtype, char *buf, int len)
         //            ui->textBrowser_recvText->append(str);
         //        QMessageBox::information(this,"消息",QString::number(loss)+"%");
         //        chartPicSize->addData(++currentIndex,loss);
-//        workerUdpReceiveObj->clearFrameRcvCount();
+        //        workerUdpReceiveObj->clearFrameRcvCount();
         videowriter.release();
         form_display_tcp_video->showVideoFrame(QPixmap(defaultCarPicPath));
 
@@ -265,28 +265,33 @@ void MainWindow::slotPlotSingleFrameDelay(uint num, qint64 delaytime)
  */
 void MainWindow::slotGetVideo()
 {
+
     Mat mat;
+
     capture >> mat;
+
     if(mat.empty()) {
 
         slotStopSightShare();
         return;
     }
-    //    ++pic_num_hasSended;
+
     if(ui->checkBoxStroeSightShare->isChecked()){
         videowriter << mat;
     }
-
-    //    imwrite("temp.jpg",mat);
-
-
+#ifndef DEBUG_SINGLE_PICTURE
     QPixmap pixmap = QPixmap::fromImage(MatToQImage(mat));
+#else
+    QPixmap pixmap("temp.jpg");
+#endif
+
     pixmap = pixmap.scaled(label_videoRealTimeSight->size(),Qt::KeepAspectRatio,Qt::SmoothTransformation);
     label_videoRealTimeSight->setPixmap(pixmap);
 
+#ifndef DEBUG_SINGLE_PICTURE
     pixmap.save("temp.jpg","JPG");
+#endif
     //压缩图片质量
-
 
     if(ui->checkBox_UseLTE->isChecked()){
         emit signal_tcpSendImage("temp.jpg",MsgType::VideoType,"JPG");
@@ -303,6 +308,7 @@ void MainWindow::slotGetVideo()
  */
 void MainWindow::slotStartSightShare()
 {
+
     if(capture.isOpened()) {
         ToastString("已经在共享了，请勿重复点击");
         return;
@@ -325,14 +331,8 @@ void MainWindow::slotStartSightShare()
         ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
         return;
     }
-    //    else if(!capture.open(!VIDEOSOURCE)){
-    //        qDebug()<<"打开摄像头失败!";
-    //        ToastString("打开摄像头失败!");
-    //        ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
 
-    //        return;
 
-    //    }
     timer_get_video = new QTimer(this);
     int videoFrameRate = ui->lineEdit_videoFPS->text().toInt();
     timer_get_video->start(1000/videoFrameRate);//1s采集10张图片
@@ -351,7 +351,6 @@ void MainWindow::slotStartSightShare()
 
     //定时共享
     timer_sightShareTimeLeft = new QTimer(this);
-    timer_sightShareTimeLeft->start(1000);
     time_sightshareSecondLeft = SIGHT_SHARE_TIME;
     qDebug()<<"共享时间："<<time_sightshareSecondLeft;
     label_sightShare->setText(tr("%1 S后结束共享").arg(time_sightshareSecondLeft));
@@ -363,9 +362,12 @@ void MainWindow::slotStartSightShare()
             label_sightShare->adjustSize();
         }
         else{
+            slotStopSightShare();
             ui->widgetSightShare->getMenuWidget()->setCurrentIndex(1);
+
         }
     });
+    timer_sightShareTimeLeft->start(1000);
 
 
 
@@ -406,7 +408,6 @@ void MainWindow::slotStopSightShare()
         timer_sightShareTimeLeft->deleteLater();
 
         label_sightShare->clear();
-
     }
 
     if(videowriter.isOpened()){
@@ -464,9 +465,9 @@ void MainWindow::InitForm()
     connect(ui->rbLTESetting,&QRadioButton::toggled,this,&MainWindow::loadLTEAndDSRCPortIPSetting);
 
     // 测试数据
-//    for(int i=1;i<=100;++i){
-//        chartPicUdp->addData(i,i*i);
-//    }
+    //    for(int i=1;i<=100;++i){
+    //        chartPicUdp->addData(i,i*i);
+    //    }
 
 }
 /**
@@ -802,13 +803,7 @@ void MainWindow::loadSettings()
     /*对方IP地址和端口号*/
     setting.beginGroup("otherSize");
     ui->lineEdit_otherPort->setText(setting.value("port").toString());
-    ui->comboBoxOtherIP->setCurrentText(setting.value("ip").toString());
-
-    ui->rbDSRCSetting->setChecked(setting.value("radioButtonDSRCSetting").toBool());
-    ui->rbLTESetting->setChecked(setting.value("radioButtonLTESetting").toBool());
-
-
-    ui->checkBox_UseDSRC->setChecked(setting.value("checkBoxDSRCSetting").toBool());
+    ui->comboBoxOtherIP->setCurrentText(setting.value("ip").toString());ui->checkBox_UseDSRC->setChecked(setting.value("checkBoxDSRCSetting").toBool());
     ui->checkBox_UseLTE->setChecked(setting.value("checkBoxLTESetting").toBool());
 
     int arraySize = setting.beginReadArray("IP");
@@ -817,12 +812,11 @@ void MainWindow::loadSettings()
         setting.setArrayIndex(i);
         ui->comboBoxOtherIP->addItem(setting.value("ip").toString());
     }
-//    int currentIndex = setting.value("currentIndex").toInt();
-//    if(currentIndex >= 0){
-//        ui->comboBoxOtherIP->setCurrentIndex(currentIndex);
-//    }
 
     setting.endArray();
+
+    ui->rbDSRCSetting->setChecked(setting.value("radioButtonDSRCSetting").toBool());
+    ui->rbLTESetting->setChecked(setting.value("radioButtonLTESetting").toBool());
 
     setting.endGroup();
 
@@ -954,6 +948,7 @@ void MainWindow::SyncTimeStamp()
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     saveSettings();
+
     e->accept();
 }
 
@@ -980,10 +975,10 @@ void MainWindow::on_pb_getLocalIP_clicked()
  */
 void MainWindow::on_pb_bindLocal_clicked()
 {
-//    if(ui->rbDSRCSetting->isChecked()){
-//        ToastString("使用TCP无需设置此选项");
-//        return;
-//    }
+    //    if(ui->rbDSRCSetting->isChecked()){
+    //        ToastString("使用TCP无需设置此选项");
+    //        return;
+    //    }
 
     QString ip = ui->comboBoxLocalIP->currentText();
     if(ip.isEmpty()){

@@ -21,8 +21,13 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 WorkerTcpObject::~WorkerTcpObject()
 {
     //    delete recvBuf;
-//    workthread->quit();
+    //    workthread->quit();
     emit finished();
+    QMapIterator<quint16,s_memCache> i(memCacheMapTcp);
+    while (i.hasNext()) {
+        delete i.value().memStart;
+    }
+
     delete m_sendBuf;
 
 }
@@ -56,7 +61,7 @@ void WorkerTcpObject::slotStartTcp()
         qDebug()<<"掉线了";
         emit signalWorkerTcpMsgDialog(0,"连接断开...");
     });
-    connect(tcpSocket,&QTcpSocket::readyRead,this,&WorkerTcpObject::slotTcpRecvVideo);
+    connect(tcpSocket,&QTcpSocket::readyRead,this,&WorkerTcpObject::slotTcpRecvVideo,Qt::DirectConnection);
 
     hasRecvedSize = 0;
 
@@ -241,8 +246,9 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
 
 void WorkerTcpObject::readTcpInfoOneTime()
 {
-    forever{
 
+    forever{
+        tcpSocket->waitForReadyRead();
         QByteArray message;//存放从服务器接收到的字节流数据
         QDataStream in(tcpSocket);	//将客户端套接字与输入数据流对象in绑定
 
@@ -260,8 +266,8 @@ void WorkerTcpObject::readTcpInfoOneTime()
             if (tcpSocket->bytesAvailable() < (int)sizeof(quint64))
             {
                 //一幅图像的大小信息还未传输过来
-//                QCoreApplication::processEvents(QEventLoop::AllEvents,10);
-                return;
+                //                QCoreApplication::processEvents(QEventLoop::AllEvents,10);
+                continue;
             }
             in >> imageBlockSize;//一幅图像的大小信息
 
@@ -283,7 +289,7 @@ void WorkerTcpObject::readTcpInfoOneTime()
         if (tcpSocket->bytesAvailable() < imageBlockSize)
         {
             //            QCoreApplication::processEvents(QEventLoop::AllEvents,10);
-            return;
+            continue;
         }
 
         in >> imageNumberCurr;
@@ -303,7 +309,7 @@ void WorkerTcpObject::readTcpInfoOneTime()
                 memcpy(memCacheMapTcp[key].memStart,message.data(),imageBlockSize);
                 memCacheMapTcp[key].memSize = imageBlockSize;
                 memCacheMapTcp[key].picNum = imageNumberCurr;
-//                qDebug()<<tr("reuse key %1").arg(key);
+                //                qDebug()<<tr("reuse key %1").arg(key);
 
             }else{
                 qDebug()<<tr("is going to reuse key %1 ,but it being used......").arg(key);
@@ -318,7 +324,7 @@ void WorkerTcpObject::readTcpInfoOneTime()
             s.memStart = new char[MAX_IMAGE_SIZE];
             memcpy(s.memStart,message.data(),imageBlockSize);
             memCacheMapTcp.insert(key,s);
-//            qDebug()<<"first use mem cache";
+            //            qDebug()<<"first use mem cache";
         }
 
 
@@ -331,15 +337,9 @@ void WorkerTcpObject::readTcpInfoOneTime()
 
         memCacheMapTcp[key].isVisited = true;
 
-
     }
-    //    QImage img;
-    //    //img.loadFromData(rdc,"JPEG");//解释为jpg格式的图像
-    //    img.loadFromData(message);//解释为jpg格式的图像
 
-    //    QPixmap pixmap = QPixmap::fromImage(img);
-    //    pixmap.scaled(ui->label_imageShow->size());
-    //    ui->label_imageShow->setPixmap(pixmap);
+//    QTimer::singleShot(1,Qt::PreciseTimer,this,&WorkerTcpObject::slotTcpRecvVideo);
 }
 /**
  * @brief WorkerTcpObject::sendOneImageByMultipleFrames
@@ -457,6 +457,8 @@ void WorkerTcpObject::sendOneImageOneTime(QString filepath, int msgtype, QString
     out << InterfaceType::LTE;
 
     tcpSocket->write(ba);	//将整块数据写入套接字
+    tcpSocket->flush();
+    tcpSocket->waitForBytesWritten();
 
 }
 
