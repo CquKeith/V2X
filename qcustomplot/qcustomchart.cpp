@@ -68,7 +68,7 @@ void QCustomChart::setData(const QVector<double> &keys, const QVector<double> &v
 void QCustomChart::addData(double key, double value)
 {
     m_pCustomPlot->graph(0)->addData(key,value);
-    m_dataList.append(m_Data(key,value));
+//    m_dataList.append(m_Data(key,value));
 
     m_pTextBrowser->append(tr("%1：%2  %3：%4").arg(getXaxisLabel()).arg(key).arg(getYaxisLabel()).arg(value));
     slotRefresh();
