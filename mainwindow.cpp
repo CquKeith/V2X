@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     qDebug()<<__FUNCTION__<<QThread::currentThreadId();
 
-    VIDEOSOURCE = "./videoSource/2018-11-24 10.18.51.avi";
+    VIDEOSOURCE = "0";
     deviceType=VideoDeviceType::Camera;
 
 

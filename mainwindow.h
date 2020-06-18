@@ -54,7 +54,7 @@
 #include <QSettings>
 
 #ifndef DEBUG_SINGLE_PICTURE
-#define DEBUG_SINGLE_PICTURE true
+#define DEBUG_SINGLE_PICTURE false
 #endif
 
 namespace Ui {
