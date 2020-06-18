@@ -7,13 +7,13 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
     workthread->start();
 
     picnum = 0;
-
+    
     connect(this,&WorkerTcpObject::signalStartTcp,this,&WorkerTcpObject::slotStartTcp);
     connect(this,&WorkerTcpObject::finished,workthread,&QThread::quit);
     //    recvBuf = new char[65536];
-
+    
     emit signalStartTcp();
-
+    
     qDebug()<<__FUNCTION__<<QThread::currentThreadId();
 
 }
@@ -23,12 +23,14 @@ WorkerTcpObject::~WorkerTcpObject()
     //    delete recvBuf;
     //    workthread->quit();
     emit finished();
-    QMapIterator<quint16,s_memCache> i(memCacheMapTcp);
-    while (i.hasNext()) {
-        delete i.value().memStart;
-    }
 
-    delete m_sendBuf;
+​    QMapIterator<quint16,s_memCache> i(memCacheMapTcp);
+​    while (i.hasNext()) {
+​        delete i.value().memStart;
+​    }
+
+
+​    delete[] m_sendBuf;
 
 }
 
@@ -84,14 +86,14 @@ void WorkerTcpObject::readTcpInfo()
 
         char *recvBuf = datagram.data();
         PackageHead *mes = (PackageHead *)datagram.data();
-
+    
         if (mes->msgType == MsgType::ImageType || mes->msgType == MsgType::VideoType) {
             char * m_buf;
             quint16 key = mes->uPicnum%MEM_CACHE_MAX_SIZE;
             /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
             if(memCacheMapTcp.contains(key)){
                 s_memCache mem_cache = memCacheMapTcp[key];
-
+    
                 //此片内存别人已经用完，可以再次使用
                 if(mem_cache.isVisited){
                     m_buf = mem_cache.memStart;
@@ -124,9 +126,9 @@ void WorkerTcpObject::readTcpInfo()
                 memCacheMapTcp.insert(key,mem_cache);
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
-
+    
             mes->uRecDatatime= QDateTime::currentMSecsSinceEpoch();; //获取接收时间戳
-
+    
             if (hasRecvedSize >= (mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize)) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
                 emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
@@ -163,7 +165,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
         要和下一包组合起来。
     */
     m_buffer.append(buffer);
-
+    
     int totalLen = m_buffer.size();
     while( totalLen ){
         //不够包头的数据直接就不处理。
@@ -175,7 +177,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
         PackageHead *mes = (PackageHead *)recvBuf;
         //如果不够长度，等够了再解析
         if(totalLen < mes->uTransFrameSize)break;
-
+    
         //数据足够多，且满足我们定义的包头的几种类型
         if (mes->msgType == MsgType::ImageType || mes->msgType == MsgType::VideoType) {
             char * m_buf;
@@ -183,7 +185,7 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
             /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
             if(memCacheMapTcp.contains(key)){
                 s_memCache mem_cache = memCacheMapTcp[key];
-
+    
                 //此片内存别人已经用完，可以再次使用
                 if(mem_cache.isVisited){
                     m_buf = mem_cache.memStart;
@@ -216,9 +218,9 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
                 memCacheMapTcp.insert(key,mem_cache);
             }
             memcpy(m_buf+mes->uDataInFrameOffset, (recvBuf+ sizeof(PackageHead)), mes->uTransFrameSize);
-
+    
             mes->uRecDatatime = QDateTime::currentMSecsSinceEpoch(); //获取接收时间戳
-
+    
             if (mes->uDataFrameCurr == mes->uDataFrameTotal) {
                 emit signalTcpRecvOK((int)mes->msgType,m_buf, mes->uDataFrameSize);
                 emit signalSinglePicDelayAndFrameSize(mes->uPicnum,mes->uRecDatatime-mes->uSendDatatime,((double)(mes->uDataFrameSize+mes->uDataFrameTotal*mes->uTransFrameHdrSize))/1024);
@@ -226,13 +228,13 @@ void WorkerTcpObject::readTcpInfoByMultipleFrames()
                 //                hasRecvedSize = 0;
             }
         }
-
+    
         //缓存多余的数据
         buffer = m_buffer.right(totalLen - mes->uTransFrameSize - sizeof(PackageHead));
-
+    
         //更新长度
         totalLen = buffer.size();
-
+    
         //更新多余数据
         m_buffer = buffer;
     }
@@ -251,7 +253,7 @@ void WorkerTcpObject::readTcpInfoOneTime()
         tcpSocket->waitForReadyRead();
         QByteArray message;//存放从服务器接收到的字节流数据
         QDataStream in(tcpSocket);	//将客户端套接字与输入数据流对象in绑定
-
+    
         in.setVersion(QDataStream::Qt_5_9);//设置数据流的版本
 
 
@@ -259,7 +261,7 @@ void WorkerTcpObject::readTcpInfoOneTime()
         if (imageBlockSize == 0)
         {
             //如果imageBlockSize == 0 则说明,一幅图像的大小信息还未传输过来
-
+    
             //uint64是8字节的8 Bytes  64bit
             //判断接收的数据是否有8字节（文件大小信息）
             //如果有则保存到basize变量中，没有则返回，继续接收数据
@@ -278,12 +280,12 @@ void WorkerTcpObject::readTcpInfoOneTime()
             //            QMessageBox::information(this, tr("warning"), tr("the video is end!"));
             //            return;
             //        }
-
+    
             //        qDebug() << "imageBlockSize  is " << imageBlockSize;
             //        QString imageBlockS = "imageBlockSize  is " + QString::number(imageBlockSize) + "Bytes!";
             //        ui->info->append(imageBlockS);
             message.resize(imageBlockSize);
-
+    
         }
         //如果没有得到一幅图像的全部数据，则返回继续接收数据
         if (tcpSocket->bytesAvailable() < imageBlockSize)
@@ -291,16 +293,16 @@ void WorkerTcpObject::readTcpInfoOneTime()
             //            QCoreApplication::processEvents(QEventLoop::AllEvents,10);
             continue;
         }
-
+    
         in >> imageNumberCurr;
         in >> startTimestemp;
         in >> currentInterfaceType;
 
 
         in >> message;//一幅图像所有像素的完整字节流
-
+    
         qint64 endTimestamp = QDateTime::currentMSecsSinceEpoch();
-
+    
         quint16 key = imageNumberCurr % MEM_CACHE_MAX_SIZE;
         /*memCacheMap中是否有此记录 如果有，则看这片内存是否已经用过。如果已经用过，则可以使用，否则就新建一片内存*/
         if(memCacheMapTcp.contains(key)){
@@ -310,7 +312,7 @@ void WorkerTcpObject::readTcpInfoOneTime()
                 memCacheMapTcp[key].memSize = imageBlockSize;
                 memCacheMapTcp[key].picNum = imageNumberCurr;
                 //                qDebug()<<tr("reuse key %1").arg(key);
-
+    
             }else{
                 qDebug()<<tr("is going to reuse key %1 ,but it being used......").arg(key);
                 continue;
@@ -334,9 +336,9 @@ void WorkerTcpObject::readTcpInfoOneTime()
 
         imageBlockSize = 0;//已经收到一幅完整的图像，将imageBlockSize置0，等待接收下一幅图像
         startTimestemp = 0;
-
+    
         memCacheMapTcp[key].isVisited = true;
-
+    
     }
 
 //    QTimer::singleShot(1,Qt::PreciseTimer,this,&WorkerTcpObject::slotTcpRecvVideo);
@@ -388,18 +390,18 @@ void WorkerTcpObject::sendOneImageByMultipleFrames(QString filepath, int msgtype
         mes.uDataFrameTotal = num;
         mes.uDataFrameCurr = count+1;
         mes.uDataInFrameOffset = count*packageContentSize;
-
+    
         mes.uPicnum = picnum;
         mes.uSendDatatime = QDateTime::currentMSecsSinceEpoch();
         mes.uRecDatatime = 0;
-
+    
         //放入图片的格式
         //        memcpy(mes.imageFormat,imageFormat.toStdString().data(),imageFormat.length());
-
+    
         imgfile.read(m_sendBuf+sizeof(PackageHead), packageContentSize);
-
+    
         memcpy(m_sendBuf, (char *)&mes, sizeof(PackageHead));
-
+    
         //放缓发送的速度
         //        QTime dieTime = QTime::currentTime().addMSecs(1);
         //        while( QTime::currentTime() < dieTime )
@@ -407,15 +409,15 @@ void WorkerTcpObject::sendOneImageByMultipleFrames(QString filepath, int msgtype
         tcpSocket->write(m_sendBuf, mes.uTransFrameSize+mes.uTransFrameHdrSize);
         //        tcpSocket->write("\n");
         tcpSocket->flush();
-
+    
         tcpSocket->waitForBytesWritten();
-
+    
         count++;
 
     }
     imgfile.close();
 
-    //    delete m_sendBuf;
+    //    delete[] m_sendBuf;
 }
 /**
  * @brief WorkerTcpObject::sendOneImageOneTime
@@ -439,23 +441,23 @@ void WorkerTcpObject::sendOneImageOneTime(QString filepath, int msgtype, QString
 
 
     ++picnum;
-
+    
     out << (quint64)0;	//写入套接字图像数据的大小
     out << (quint64)0;	//写入套接字 当前是第几张图片
     out << (quint64)0;	//写入套接字 当前时间戳
-
+    
     out << (quint64)0;	//写入套接字 当前使用的接口(LTE or DSRC)
-
+    
     out << byte;			//写入套接字的经压缩-编码后的图像数据
-
+    
     out.device()->seek(0);
     out << (quint64)(ba.size() - sizeof(quint64));//写入套接字的经压缩-编码后的图像数据的大小
-
+    
     out << picnum;
     out << QDateTime::currentMSecsSinceEpoch();
-
+    
     out << InterfaceType::LTE;
-
+    
     tcpSocket->write(ba);	//将整块数据写入套接字
     tcpSocket->flush();
     tcpSocket->waitForBytesWritten();
