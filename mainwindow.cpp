@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //    QTimer::singleShot(10,[=]{ui->widgetRealTimeVideo->refreshForm();ui->widgetSightShare->refreshForm();});
-//    qRegisterMetaType<VideoQualityType>("VideoQualityType");
+    //    qRegisterMetaType<VideoQualityType>("VideoQualityType");
 
     QTimer::singleShot(10,Qt::VeryCoarseTimer,this,&MainWindow::loadSettings);
 }
@@ -53,10 +53,11 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     //    saveSettings();
-    form_display_tcp_video->deleteLater();
+
     workerUdpReceiveObj->deleteLater();
     workerUdpSendObj->deleteLater();
     workerTcpObj->deleteLater();
+    form_display_tcp_video->close();
 
     delete ui;
 }

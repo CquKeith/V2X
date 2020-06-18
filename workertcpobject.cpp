@@ -20,17 +20,15 @@ WorkerTcpObject::WorkerTcpObject(QObject *parent) : QObject(parent)
 
 WorkerTcpObject::~WorkerTcpObject()
 {
-    //    delete recvBuf;
+    //    delete[] recvBuf;
     //    workthread->quit();
     emit finished();
 
-​    QMapIterator<quint16,s_memCache> i(memCacheMapTcp);
-​    while (i.hasNext()) {
-​        delete i.value().memStart;
-​    }
-
-
-​    delete[] m_sendBuf;
+    QMapIterator<quint16,s_memCache> i(memCacheMapTcp);
+    while (i.hasNext()) {
+        delete i.value().memStart;
+    }
+    delete[] m_sendBuf;
 
 }
 

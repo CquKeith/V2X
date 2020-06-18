@@ -14,6 +14,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QCoreApplication>
+#include <QMapIterator>
 
 #include "imagetool.h"
 #include "msghead.h"
