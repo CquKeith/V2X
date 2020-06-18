@@ -57,7 +57,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidgetMain">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="page_index">
        <layout class="QGridLayout" name="gridLayout">
@@ -866,7 +866,7 @@
                      </rect>
                     </property>
                     <property name="frameShape">
-                     <enum>QFrame::StyledPanel</enum>
+                     <enum>QFrame::Box</enum>
                     </property>
                     <property name="frameShadow">
                      <enum>QFrame::Raised</enum>
@@ -982,6 +982,30 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>comboBoxOtherIP</tabstop>
+  <tabstop>lineEdit_otherPort</tabstop>
+  <tabstop>pb_setOtherSocket</tabstop>
+  <tabstop>checkBox_UseDSRC</tabstop>
+  <tabstop>checkBox_UseLTE</tabstop>
+  <tabstop>rbDSRCSetting</tabstop>
+  <tabstop>rbLTESetting</tabstop>
+  <tabstop>comboBoxLocalIP</tabstop>
+  <tabstop>lineEdit_localPort</tabstop>
+  <tabstop>pb_bindLocal</tabstop>
+  <tabstop>pb_getLocalIP</tabstop>
+  <tabstop>lineEdit_videoFPS</tabstop>
+  <tabstop>checkBoxStroeSightShare</tabstop>
+  <tabstop>tb_back</tabstop>
+  <tabstop>tb_exit</tabstop>
+  <tabstop>tb_video</tabstop>
+  <tabstop>tb_carInfo</tabstop>
+  <tabstop>tb_shareSight</tabstop>
+  <tabstop>tb_analyse</tabstop>
+  <tabstop>tb_changeSkin</tabstop>
+  <tabstop>tb_roadInfo</tabstop>
+  <tabstop>tb_setting</tabstop>
+ </tabstops>
  <resources>
   <include location="skin.qrc"/>
  </resources>

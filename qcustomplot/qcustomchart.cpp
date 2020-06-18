@@ -32,6 +32,7 @@ void QCustomChart::setXaxisLabel(const QString &text)
 void QCustomChart::setYaxisLabel(const QString &text)
 {
     m_pCustomPlot->yAxis->setLabel(text);
+    qDebug()<<__FUNCTION__<<" Unit: "<<getYaxisLabelUnit();
 }
 
 QString QCustomChart::getXaxisLabel()
@@ -43,6 +44,15 @@ QString QCustomChart::getYaxisLabel()
 {
     return m_pCustomPlot->yAxis->label();
 }
+/**
+ * @brief QCustomChart::getYaxisLabelUnit
+ * @return Y轴括号里面的 单位
+ */
+QString QCustomChart::getYaxisLabelUnit()
+{
+    QString l = getYaxisLabel();
+    return l.mid(l.indexOf("(")+1).replace(")","");
+}
 
 void QCustomChart::setYaxisRange(double lower, double upper)
 {
@@ -53,7 +63,7 @@ void QCustomChart::setYaxisRange(double lower, double upper)
     m_yLower = upper;
     // 自定义y轴值的显示范围
     m_pCustomPlot->yAxis->setRange(m_yLower,m_yLower);
-
+    
     // 重绘
     m_pCustomPlot->replot();
 }
@@ -70,8 +80,11 @@ void QCustomChart::addData(double key, double value)
     m_pCustomPlot->graph(0)->addData(key,value);
 //    m_dataList.append(m_Data(key,value));
 
-    m_pTextBrowser->append(tr("%1：%2  %3：%4").arg(getXaxisLabel()).arg(key).arg(getYaxisLabel()).arg(value));
-    slotRefresh();
+
+
+    m_pTextBrowser->append(tr("%1 , %2 %3").arg(key).arg(value).arg(getYaxisLabelUnit()));
+//    slotRefresh();
+
 }
 /**
  * @brief QCustomChart::createWindow
@@ -99,69 +112,69 @@ void QCustomChart::createWindow()
     downloadtoPic=new QAction(QIcon(":/chart/images/image"),"另存为图片",mDownloadMenu);
     downloadtoExcel=new QAction(QIcon(":/chart/images/excel"),"另存为Excel",mDownloadMenu);
     connect(downloadtoPic,&QAction::triggered,this,&QCustomChart::saveAsImage);
-    connect(downloadtoExcel,&QAction::triggered,this,&QCustomChart::saveAsExcel);
+    connect(downloadtoExcel,&QAction::triggered,this,&QCustomChart::saveAsCSV);
     mDownloadMenu->addAction(downloadtoPic);
     mDownloadMenu->addAction(downloadtoExcel);
     mDownloadMenu->setStyleSheet("QPushButton::menu-indicator{image:none}");
-
+    
     m_pDownloadAction->setMenu(mDownloadMenu);
     connect(m_pDownloadAction,&QAction::triggered,mDownloadMenu,&QMenu::setHidden);
     //    m_pDownloadAction->s("QPushButton::menu-indicator{image:none}");
-
+    
     QActionGroup *actionGroup = new QActionGroup(this);
     m_pPrimaryAction->setCheckable(true);
     m_pChartAction->setCheckable(true);
     actionGroup->addAction(m_pPrimaryAction);
     actionGroup->addAction(m_pChartAction);
-
+    
     connect(m_pPrimaryAction, SIGNAL(triggered(bool)), this, SLOT(slotPrimaryData()));
     connect(m_pChartAction, SIGNAL(triggered(bool)), this, SLOT(slotChart()));
     connect(m_pRefreshAction, SIGNAL(triggered(bool)), this, SLOT(slotRefresh()));
     //    connect(m_pDownloadAction, SIGNAL(triggered(bool)), this, SLOT(slotDownload()));
     connect(m_clearContent,SIGNAL(triggered(bool)),this,SLOT(slotClear()));
     connect(m_pGetAverage,SIGNAL(triggered(bool)),this,SLOT(slotCalcAvg()));
-
+    
     // 将前面的按钮都放在一起
     m_pToolBar = new QToolBar(this);
     m_pToolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
     m_pToolBar->setIconSize(QSize(18,18));
-
+    
     QWidget *spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
+    
     m_pToolBar->addWidget(m_pTitleLabel);
     m_pToolBar->addWidget(spacer);
-
+    
     m_pToolBar->addAction(m_clearContent);
-
+    
     m_pToolBar->addAction(m_pPrimaryAction);
     m_pToolBar->addAction(m_pChartAction);
     m_pToolBar->addAction(m_pRefreshAction);
     m_pToolBar->addAction(m_pGetAverage);
-
+    
     m_pToolBar->addAction(m_pDownloadAction);
-
+    
     m_pStackedWidget = new QStackedWidget();
     m_pCustomPlot = new CustomPlotZoom();
     initCustomPlot();
     m_pTextBrowser = new QTextBrowser();
     m_pStackedWidget->addWidget(m_pCustomPlot);
     m_pStackedWidget->addWidget(m_pTextBrowser);
-
+    
     m_pRubberBand = new QRubberBand(QRubberBand::Rectangle, m_pCustomPlot);
-
+    
     connect(m_pCustomPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
     connect(m_pCustomPlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(m_pCustomPlot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
-
+    
     QVBoxLayout *layout = new QVBoxLayout();
     layout->setSpacing(2);
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(m_pToolBar);
     layout->addWidget(m_pStackedWidget);
-
+    
     setLayout(layout);
-
+    
     m_pChartAction->setChecked(true);
 }
 
@@ -173,26 +186,26 @@ void QCustomChart::initCustomPlot()
     //    // 设置关键点的显示效果
     m_pCustomPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle,
                                                              QPen(QColor(41,138,220), 2), QBrush(QColor(5,189,251)), 5));
-
+    
     //    // 设置x轴显示时间
     //    // configure bottom axis to show date instead of number:
     //    QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
     //    dateTicker->setDateTimeFormat("MM-dd hh:mm");
     //    m_pCustomPlot->xAxis->setTicker(dateTicker);
-
+    
     //    // make range draggable and zoomable:
     m_pCustomPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-
+    
     //    // make top right axes clones of bottom left axes:
     m_pCustomPlot->axisRect()->setupFullAxesBox();
     //    // connect signals so top and right axes move in sync with bottom and left axes:
     connect(m_pCustomPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), m_pCustomPlot->xAxis2, SLOT(setRange(QCPRange)));
     connect(m_pCustomPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), m_pCustomPlot->yAxis2, SLOT(setRange(QCPRange)));
-
+    
     //    // 设置轴的标题
     //    m_pCustomPlot->xAxis->setLabel(tr("- Time -"));
     //        m_pCustomPlot->graph(0)->setName("delay");
-
+    
     // set title of plot:
     /*
      * m_pCustomPlot->legend->setFont(QFont(font().family(),15));
@@ -274,9 +287,9 @@ void QCustomChart::saveAsExcel()
         QAxObject *workbook = excel->querySubObject("ActiveWorkBook");//获取当前工作簿
         QAxObject *worksheets = workbook->querySubObject("Sheets");//获取工作表集合
         QAxObject *worksheet = worksheets->querySubObject("Item(int)",1);//获取工作表集合的工作表1，即sheet1
-
+        
         QAxObject *cellA,*cellB;
-
+        
         //设置标题
         int cellrow=1;
         QString A="A"+QString::number(cellrow);//设置要操作的单元格，如A1
@@ -292,7 +305,7 @@ void QCustomChart::saveAsExcel()
         //        cellC->dynamicCall("SetValue(const QVariant&)",QVariant("金额"));
         //        cellD->dynamicCall("SetValue(const QVariant&)",QVariant("日期"));
         cellrow++;
-
+        
         //        int rows=this->model->rowCount();
         int rows = m_dataList.size();
         for(int i=0;i<rows;i++){
@@ -310,15 +323,34 @@ void QCustomChart::saveAsExcel()
             //            cellD->dynamicCall("SetValue(const QVariant&)",QVariant("this->model->item(i,3)->data(Qt::DisplayRole).toString()"));
             cellrow++;
         }
-
+        
         emit signalQCustomToGUI("Excel导出完毕");
-
+        
         workbook->dynamicCall("SaveAs(const QString&)",QDir::toNativeSeparators(filepath));//保存至filepath，注意一定要用QDir::toNativeSeparators将路径中的"/"转换为"\"，不然一定保存不了。
         workbook->dynamicCall("Close()");//关闭工作簿
         excel->dynamicCall("Quit()");//关闭excel
         delete excel;
         excel=NULL;
     }
+}
+/**
+ * @brief QCustomChart::saveAsCSV
+ * 保存text到csv
+ */
+void QCustomChart::saveAsCSV()
+{
+    QFile file;
+    file.setFileName(QFileDialog::getSaveFileName(this,tr("保存路径"),".",tr("CSV File(*.csv)")));
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&file);
+
+    out << getXaxisLabel() <<","<<getYaxisLabel()<<endl;
+    out << m_pTextBrowser->toPlainText().replace(getYaxisLabelUnit(),"");
+
+    file.close();
+
+    emit signalQCustomToGUI("导出完毕~");
+
 }
 
 void QCustomChart::slotPrimaryData()
@@ -389,7 +421,7 @@ void QCustomChart::mouseRelease(QMouseEvent *mevent)
 
         m_pCustomPlot->xAxis->setRange(x1, x2);
         m_pCustomPlot->yAxis->setRange(y1, y2);
-
+    
         m_pRubberBand->hide();
         m_pCustomPlot->replot();
     }
@@ -454,7 +486,7 @@ void CustomPlotZoom::mouseReleaseEvent(QMouseEvent *event)
 
         xAxis->setRange(x1, x2);
         yAxis->setRange(y1, y2);
-
+    
         m_pRubberBand->hide();
         replot();
     }

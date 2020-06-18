@@ -8,6 +8,8 @@ WorkerUdpSendObject::WorkerUdpSendObject(QObject *parent) : QObject(parent)
     moveToThread(workthread);
     workthread->start();
 
+    connect(this,&WorkerUdpSendObject::finished,workthread,&QThread::quit);
+
     //目的端口和IP的默认值
     hostIP = "127.0.0.1";
     hostPort = 4040;
@@ -23,7 +25,8 @@ WorkerUdpSendObject::WorkerUdpSendObject(QObject *parent) : QObject(parent)
 */
 WorkerUdpSendObject::~WorkerUdpSendObject()
 {
-    workthread->quit();
+//    workthread->quit();
+    emit finished();
 //    qDebug()<<tr("in %1() , thread id is:%2").arg(__FUNCTION__).arg((int)QThread::currentThreadId());
 }
 /*
@@ -71,7 +74,7 @@ void WorkerUdpSendObject::udpSendText(QString messge)
 
     udpsender.writeDatagram(msg,head.uTransFrameSize+head.uTransFrameHdrSize,desIP,desPort);
 
-    delete msg;
+    delete[] msg;
 
 }
 /*
@@ -168,7 +171,7 @@ void WorkerUdpSendObject::udpSendImage(QString filepath, int msgtype,QString ima
 //        }
     }
     imgfile.close();
-    delete m_sendBuf;
+    delete[] m_sendBuf;
 }
 
 
